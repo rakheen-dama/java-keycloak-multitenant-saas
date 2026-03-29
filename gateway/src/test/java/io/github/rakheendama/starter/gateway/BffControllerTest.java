@@ -96,8 +96,8 @@ class BffControllerTest {
     mockMvc
         .perform(get("/bff/me").with(oidcLogin().oidcUser(oidcUser)))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.orgId").isNotEmpty())
-        .andExpect(jsonPath("$.orgSlug").isNotEmpty())
+        .andExpect(jsonPath("$.orgId").value("org-uuid-456"))
+        .andExpect(jsonPath("$.orgSlug").value("acme-corp"))
         .andExpect(jsonPath("$.groups").isArray());
   }
 

@@ -14,6 +14,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import javax.sql.DataSource;
+import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -46,39 +47,16 @@ class SecurityIntegrationTest {
     String schemaName = "tenant_abcdef012345";
 
     try (Connection conn = dataSource.getConnection()) {
-      var stmt = conn.createStatement();
-      stmt.execute("CREATE SCHEMA IF NOT EXISTS " + schemaName);
-      // Run tenant migrations so MemberFilter can query the members table
-      stmt.execute("SET search_path TO " + schemaName);
-      stmt.execute(
-          """
-          CREATE TABLE IF NOT EXISTS organizations (
-              id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-              keycloak_org_id VARCHAR(255) NOT NULL UNIQUE,
-              name            VARCHAR(255) NOT NULL,
-              slug            VARCHAR(100) NOT NULL,
-              status          VARCHAR(20) NOT NULL DEFAULT 'IN_PROGRESS',
-              created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
-              updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
-          )
-          """);
-      stmt.execute(
-          """
-          CREATE TABLE IF NOT EXISTS members (
-              id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-              keycloak_user_id VARCHAR(255) NOT NULL UNIQUE,
-              email           VARCHAR(255) NOT NULL,
-              display_name    VARCHAR(255),
-              role            VARCHAR(20) NOT NULL,
-              status          VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
-              first_login_at  TIMESTAMPTZ,
-              last_login_at   TIMESTAMPTZ,
-              created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
-              updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
-          )
-          """);
-      stmt.execute("SET search_path TO public");
+      conn.createStatement().execute("CREATE SCHEMA IF NOT EXISTS " + schemaName);
     }
+
+    Flyway.configure()
+        .dataSource(dataSource)
+        .locations("classpath:db/migration/tenant")
+        .schemas(schemaName)
+        .baselineOnMigrate(true)
+        .load()
+        .migrate();
     orgSchemaMappingRepository.save(new OrgSchemaMapping(orgAlias, schemaName));
 
     // Authenticated request with a JWT carrying the provisioned org
