@@ -4,7 +4,7 @@ server:
     session:
       cookie:
         http-only: true
-        secure: false
+        secure: true
         same-site: lax
         name: SESSION
 

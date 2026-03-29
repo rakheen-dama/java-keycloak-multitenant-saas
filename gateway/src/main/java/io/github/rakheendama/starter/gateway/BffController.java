@@ -2,7 +2,6 @@ package io.github.rakheendama.starter.gateway;
 
 import io.github.rakheendama.starter.gateway.config.BffUserInfoExtractor;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -11,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,12 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class BffController {
 
   private static final Logger log = LoggerFactory.getLogger(BffController.class);
-
-  private final CookieCsrfTokenRepository csrfTokenRepository;
-
-  public BffController(CookieCsrfTokenRepository csrfTokenRepository) {
-    this.csrfTokenRepository = csrfTokenRepository;
-  }
 
   public record BffUserInfo(
       boolean authenticated,
@@ -45,13 +37,9 @@ public class BffController {
   }
 
   @GetMapping("/csrf")
-  public ResponseEntity<Map<String, String>> csrf(
-      HttpServletRequest request, HttpServletResponse response) {
-    CsrfToken csrfToken = csrfTokenRepository.loadToken(request);
-    if (csrfToken == null) {
-      csrfToken = csrfTokenRepository.generateToken(request);
-      csrfTokenRepository.saveToken(csrfToken, request, response);
-    }
+  public ResponseEntity<Map<String, String>> csrf(HttpServletRequest request) {
+    CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
+    // Accessing .getToken() triggers deferred resolution and cookie write
     return ResponseEntity.ok(
         Map.of(
             "token", csrfToken.getToken(),
