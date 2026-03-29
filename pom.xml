@@ -19,11 +19,9 @@
     <name>java-keycloak-multitenant-saas</name>
     <description>Multi-tenant SaaS starter with Keycloak organizations and schema-per-tenant isolation</description>
 
-    <!-- Modules will be added in T1B when backend/ and gateway/ are created -->
-    <!-- <modules>
+    <modules>
         <module>backend</module>
-        <module>gateway</module>
-    </modules> -->
+    </modules>
 
     <properties>
         <java.version>25</java.version>

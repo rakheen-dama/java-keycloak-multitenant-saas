@@ -1,0 +1,23 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/starter
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8180/realms/starter
+          jwk-set-uri: http://localhost:8180/realms/starter/protocol/openid-connect/certs
+
+logging:
+  level:
+    io.github.rakheendama.starter: DEBUG
+    org.hibernate.SQL: DEBUG
