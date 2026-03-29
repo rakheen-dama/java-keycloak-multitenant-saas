@@ -1,0 +1,130 @@
+{
+  "id": "starter",
+  "realm": "starter",
+  "displayName": "Starter",
+  "enabled": true,
+  "registrationAllowed": false,
+  "registrationEmailAsUsername": true,
+  "verifyEmail": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": true,
+  "sslRequired": "none",
+  "organizationsEnabled": true,
+  "roles": {
+    "realm": [
+      {
+        "name": "default-roles-starter",
+        "composite": true,
+        "composites": {
+          "realm": ["offline_access", "uma_authorization"]
+        }
+      },
+      {
+        "name": "offline_access",
+        "description": "Offline access"
+      },
+      {
+        "name": "uma_authorization",
+        "description": "UMA authorization"
+      }
+    ]
+  },
+  "defaultRole": {
+    "name": "default-roles-starter"
+  },
+  "groups": [
+    {
+      "name": "platform-admins",
+      "path": "/platform-admins"
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "starter-gateway",
+      "name": "Starter Gateway",
+      "description": "Spring Cloud Gateway Backend-for-Frontend",
+      "enabled": true,
+      "publicClient": false,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "secret": "starter-gateway-secret",
+      "redirectUris": [
+        "http://localhost:8443/login/oauth2/code/keycloak"
+      ],
+      "attributes": {
+        "post.logout.redirect.uris": "http://localhost:8443"
+      },
+      "webOrigins": [
+        "http://localhost:8443"
+      ],
+      "protocol": "openid-connect",
+      "fullScopeAllowed": true,
+      "protocolMappers": [
+        {
+          "name": "groups",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-group-membership-mapper",
+          "consentRequired": false,
+          "config": {
+            "full.path": "false",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "groups",
+            "userinfo.token.claim": "true"
+          }
+        },
+        {
+          "name": "organization",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-organization-membership-mapper",
+          "consentRequired": false,
+          "config": {
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "starter-admin-cli",
+      "name": "Starter Admin CLI",
+      "description": "Service account for backend Keycloak Admin API calls",
+      "enabled": true,
+      "publicClient": false,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "secret": "starter-gateway-secret",
+      "protocol": "openid-connect",
+      "fullScopeAllowed": false,
+      "serviceAccountClientScopes": [],
+      "defaultClientScopes": [],
+      "optionalClientScopes": []
+    },
+    {
+      "clientId": "admin-cli",
+      "name": "Admin CLI",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": true
+    }
+  ],
+  "smtpServer": {
+    "host": "mailpit",
+    "port": "1025",
+    "from": "noreply@starter.local",
+    "fromDisplayName": "Starter",
+    "ssl": "false",
+    "starttls": "false",
+    "auth": "false"
+  },
+  "internationalizationEnabled": true,
+  "supportedLocales": ["en"],
+  "defaultLocale": "en"
+}
