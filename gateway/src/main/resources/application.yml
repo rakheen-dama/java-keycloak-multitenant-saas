@@ -39,6 +39,8 @@ spring:
             issuer-uri: ${KEYCLOAK_ISSUER:http://localhost:8180/realms/starter}
 
   cloud:
+    compatibility-verifier:
+      enabled: false
     gateway:
       server:
         webmvc:

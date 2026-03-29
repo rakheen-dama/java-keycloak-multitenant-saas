@@ -22,11 +22,11 @@ SERVICES="postgres keycloak mailpit"
 echo "Starting infrastructure services..."
 echo ""
 
-echo "[1/2] Starting services..."
+echo "[1/3] Starting services..."
 docker compose -f "$COMPOSE_FILE" up -d $SERVICES
 
 echo ""
-echo "[2/2] Waiting for services to become healthy..."
+echo "[2/3] Waiting for services to become healthy..."
 
 MAX_WAIT=60
 INTERVAL=3
@@ -79,6 +79,10 @@ done
 if [[ $ELAPSED -ge 15 ]]; then
   echo "TIMEOUT (15s)"
 fi
+
+echo ""
+echo "[3/3] Running Keycloak bootstrap..."
+bash "$SCRIPT_DIR/keycloak-bootstrap.sh"
 
 echo ""
 echo "=== Dev Stack Ready ==="
