@@ -95,8 +95,7 @@ class RequestScopesTest {
 
   @Test
   void requireMemberId_throwsWhenNotBound() {
-    assertThatThrownBy(RequestScopes::requireMemberId)
-        .isInstanceOf(IllegalStateException.class);
+    assertThatThrownBy(RequestScopes::requireMemberId).isInstanceOf(IllegalStateException.class);
   }
 
   @Test
@@ -111,8 +110,7 @@ class RequestScopesTest {
 
   @Test
   void requireTenantId_throwsWhenNotBound() {
-    assertThatThrownBy(RequestScopes::requireTenantId)
-        .isInstanceOf(IllegalStateException.class);
+    assertThatThrownBy(RequestScopes::requireTenantId).isInstanceOf(IllegalStateException.class);
   }
 
   @Test
