@@ -59,6 +59,7 @@ public class GatewaySecurityConfig {
         .logout(
             logout ->
                 logout
+                    .logoutUrl("/bff/logout")
                     .logoutSuccessHandler(oidcLogoutSuccessHandler())
                     .invalidateHttpSession(true)
                     .deleteCookies("SESSION"))
@@ -66,7 +67,7 @@ public class GatewaySecurityConfig {
             csrf ->
                 csrf.csrfTokenRepository(csrfTokenRepository())
                     .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
-                    .ignoringRequestMatchers("/bff/**", "/api/**"))
+                    .ignoringRequestMatchers("/bff/**"))
         .exceptionHandling(
             ex ->
                 ex.defaultAuthenticationEntryPointFor(

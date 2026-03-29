@@ -65,7 +65,7 @@ public class BffController {
       return ResponseEntity.ok(BffUserInfo.unauthenticated());
     }
 
-    log.info("BFF /me claims: {}", user.getClaims());
+    log.debug("BFF /me called for subject: {}", user.getSubject());
     BffUserInfoExtractor.OrgInfo orgInfo = BffUserInfoExtractor.extractOrgInfo(user);
     List<String> groups = extractGroups(user);
 
