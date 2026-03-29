@@ -1,0 +1,17 @@
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://unused.test/realms/test
+          jwk-set-uri: https://unused.test/realms/test/protocol/openid-connect/certs
+
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+logging:
+  level:
+    io.github.rakheendama.starter: DEBUG
+    org.flywaydb: DEBUG
