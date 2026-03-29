@@ -35,7 +35,7 @@ ELAPSED=0
 # Wait for Postgres
 printf "  Postgres (localhost:5432)... "
 while [[ $ELAPSED -lt $MAX_WAIT ]]; do
-  if docker exec starter-postgres pg_isready -U postgres > /dev/null 2>&1; then
+  if docker exec starter-postgres pg_isready -U "${POSTGRES_USER:-postgres}" > /dev/null 2>&1; then
     echo "ready"
     break
   fi

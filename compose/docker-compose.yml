@@ -47,7 +47,7 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/8180 && echo done"]
+      test: ["CMD-SHELL", "curl -sf http://localhost:8180/realms/starter || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 15

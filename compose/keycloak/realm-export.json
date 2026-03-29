@@ -51,7 +51,7 @@
       "standardFlowEnabled": true,
       "directAccessGrantsEnabled": false,
       "serviceAccountsEnabled": false,
-      "secret": "${KEYCLOAK_CLIENT_SECRET}",
+      "secret": "starter-gateway-secret",
       "redirectUris": [
         "http://localhost:8443/login/oauth2/code/keycloak"
       ],
@@ -99,7 +99,7 @@
       "standardFlowEnabled": false,
       "directAccessGrantsEnabled": false,
       "serviceAccountsEnabled": true,
-      "secret": "${KEYCLOAK_CLIENT_SECRET}",
+      "secret": "starter-gateway-secret",
       "protocol": "openid-connect",
       "fullScopeAllowed": false,
       "serviceAccountClientScopes": [],
