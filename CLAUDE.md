@@ -102,6 +102,15 @@ Example: `orgSlug = "acme-corp"` → `tenant_a3f2b1c4d5e6`
 - Groups claim mapper: `groups` (platform-admin detection)
 - Organization claim mapper: `organization` (tenant resolution from JWT)
 
+## Current Progress
+
+| Slice | Name | PR | Status |
+|-------|------|----|--------|
+| T1A | Compose + Repo scaffold | #2 | Done |
+| T1B | Backend skeleton + multitenancy core | #3 | Done |
+| T1C | Migrations + integration tests | #4 | Done |
+| T2A | Gateway Maven project + security config | #5 | Done |
+
 ## Anti-Patterns (Do NOT)
 
 - Do not use `ThreadLocal` — use `ScopedValue` (Java 25, virtual-thread-safe)
