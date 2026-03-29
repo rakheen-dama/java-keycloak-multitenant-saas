@@ -1,0 +1,6 @@
+# Local development overrides
+server:
+  servlet:
+    session:
+      cookie:
+        secure: false

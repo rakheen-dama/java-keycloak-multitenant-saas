@@ -1,0 +1,71 @@
+server:
+  port: 8443
+  servlet:
+    session:
+      cookie:
+        http-only: true
+        secure: true
+        same-site: lax
+        name: SESSION
+
+spring:
+  application:
+    name: gateway
+
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:app}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:changeme}
+
+  session:
+    store-type: jdbc
+    jdbc:
+      initialize-schema: always
+      table-name: SPRING_SESSION
+    timeout: 8h
+
+  security:
+    oauth2:
+      client:
+        registration:
+          keycloak:
+            client-id: ${KEYCLOAK_CLIENT_ID:starter-gateway}
+            client-secret: ${KEYCLOAK_CLIENT_SECRET:starter-gateway-secret}
+            scope: openid,profile,email,organization
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+        provider:
+          keycloak:
+            issuer-uri: ${KEYCLOAK_ISSUER:http://localhost:8180/realms/starter}
+
+  cloud:
+    gateway:
+      server:
+        webmvc:
+          routes:
+            - id: backend-api
+              uri: ${BACKEND_URL:http://localhost:8080}
+              predicates:
+                - Path=/api/**
+              filters:
+                - TokenRelay=
+                - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_FIRST
+
+  jmx:
+    enabled: false
+
+  threads:
+    virtual:
+      enabled: true
+
+gateway:
+  frontend-url: ${FRONTEND_URL:http://localhost:3000}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: when-authorized

@@ -21,6 +21,7 @@
 
     <modules>
         <module>backend</module>
+        <module>gateway</module>
     </modules>
 
     <properties>
