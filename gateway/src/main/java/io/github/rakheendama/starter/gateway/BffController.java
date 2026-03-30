@@ -29,10 +29,11 @@ public class BffController {
       String picture,
       String orgId,
       String orgSlug,
+      boolean isPlatformAdmin,
       List<String> groups) {
 
     public static BffUserInfo unauthenticated() {
-      return new BffUserInfo(false, null, null, null, null, null, null, List.of());
+      return new BffUserInfo(false, null, null, null, null, null, null, false, List.of());
     }
   }
 
@@ -57,6 +58,8 @@ public class BffController {
     BffUserInfoExtractor.OrgInfo orgInfo = BffUserInfoExtractor.extractOrgInfo(user);
     List<String> groups = extractGroups(user);
 
+    boolean isPlatformAdmin = groups.contains("platform-admins");
+
     return ResponseEntity.ok(
         new BffUserInfo(
             true,
@@ -66,6 +69,7 @@ public class BffController {
             Objects.toString(user.getPicture(), ""),
             orgInfo != null ? orgInfo.id() : null,
             orgInfo != null ? orgInfo.slug() : null,
+            isPlatformAdmin,
             groups));
   }
 
