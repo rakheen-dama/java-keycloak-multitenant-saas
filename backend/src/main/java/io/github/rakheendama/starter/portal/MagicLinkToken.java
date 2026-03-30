@@ -10,7 +10,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table(name = "magic_link_tokens", schema = "public")
+@Table(name = "magic_link_tokens")
 public class MagicLinkToken {
 
   @Id
@@ -22,9 +22,6 @@ public class MagicLinkToken {
 
   @Column(name = "customer_id", nullable = false)
   private UUID customerId;
-
-  @Column(name = "org_id", nullable = false, length = 255)
-  private String orgId;
 
   @Column(name = "expires_at", nullable = false)
   private Instant expiresAt;
@@ -40,10 +37,8 @@ public class MagicLinkToken {
 
   protected MagicLinkToken() {}
 
-  public MagicLinkToken(
-      UUID customerId, String orgId, String tokenHash, Instant expiresAt, String createdIp) {
+  public MagicLinkToken(UUID customerId, String tokenHash, Instant expiresAt, String createdIp) {
     this.customerId = customerId;
-    this.orgId = orgId;
     this.tokenHash = tokenHash;
     this.expiresAt = expiresAt;
     this.createdIp = createdIp;
@@ -72,10 +67,6 @@ public class MagicLinkToken {
 
   public UUID getCustomerId() {
     return customerId;
-  }
-
-  public String getOrgId() {
-    return orgId;
   }
 
   public Instant getExpiresAt() {

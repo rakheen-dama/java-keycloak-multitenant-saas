@@ -51,18 +51,17 @@ public class MagicLinkService {
     }
   }
 
-  public record ExchangeResult(UUID customerId, String orgId) {}
-
   /**
-   * Generates a magic link token, persists its hash, and sends an email. Returns the raw token
-   * (only time it exists in memory).
+   * Generates a magic link token, persists its hash, and sends an email. Must be called within a
+   * tenant-scoped context (RequestScopes.TENANT_ID bound). Returns the raw token (only time it
+   * exists in memory).
    */
-  public String generateToken(UUID customerId, String orgId, String clientIp) {
-    var result = persistToken(customerId, orgId, clientIp);
+  public String generateToken(UUID customerId, String clientIp) {
+    var result = persistToken(customerId, clientIp);
 
     // Send email outside the transaction (fire-and-forget)
     try {
-      sendMagicLinkEmail(result.rawToken(), orgId);
+      sendMagicLinkEmail(result.rawToken());
     } catch (Exception e) {
       log.warn("Failed to send magic link email for customer {}", customerId, e);
     }
@@ -70,7 +69,7 @@ public class MagicLinkService {
     return result.rawToken();
   }
 
-  private TokenGenerationResult persistToken(UUID customerId, String orgId, String clientIp) {
+  private TokenGenerationResult persistToken(UUID customerId, String clientIp) {
     return transactionTemplate.execute(
         status -> {
           long recentCount =
@@ -86,8 +85,7 @@ public class MagicLinkService {
           String tokenHash = hashToken(rawToken);
 
           Instant expiresAt = Instant.now().plus(TOKEN_TTL_MINUTES, ChronoUnit.MINUTES);
-          var magicLinkToken =
-              new MagicLinkToken(customerId, orgId, tokenHash, expiresAt, clientIp);
+          var magicLinkToken = new MagicLinkToken(customerId, tokenHash, expiresAt, clientIp);
           tokenRepository.save(magicLinkToken);
 
           return new TokenGenerationResult(rawToken);
@@ -97,11 +95,11 @@ public class MagicLinkService {
   private record TokenGenerationResult(String rawToken) {}
 
   /**
-   * Exchanges a raw token for the associated customer and org identifiers. Marks the token as used
-   * (single-use).
+   * Exchanges a raw token for the associated customer ID. Marks the token as used (single-use).
+   * Must be called within a tenant-scoped context.
    */
   @Transactional
-  public ExchangeResult exchangeToken(String rawToken) {
+  public UUID exchangeToken(String rawToken) {
     String tokenHash = hashToken(rawToken);
     MagicLinkToken token =
         tokenRepository
@@ -118,7 +116,7 @@ public class MagicLinkService {
     token.markUsed();
     tokenRepository.save(token);
 
-    return new ExchangeResult(token.getCustomerId(), token.getOrgId());
+    return token.getCustomerId();
   }
 
   static String hashToken(String rawToken) {
@@ -131,7 +129,7 @@ public class MagicLinkService {
     }
   }
 
-  private void sendMagicLinkEmail(String rawToken, String orgId) {
+  private void sendMagicLinkEmail(String rawToken) {
     if (mailSender.isEmpty()) {
       log.info("No mail sender configured — magic link email not sent");
       return;
@@ -146,8 +144,6 @@ public class MagicLinkService {
           "Click the link below to log in to your portal:\n\n"
               + "https://portal.example.com/auth/exchange?token="
               + rawToken
-              + "&org="
-              + orgId
               + "\n\nThis link expires in "
               + TOKEN_TTL_MINUTES
               + " minutes.",

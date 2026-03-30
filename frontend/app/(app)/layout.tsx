@@ -49,6 +49,23 @@ export default async function AppLayout({
     redirect("/platform-admin/access-requests");
   }
 
+  // Preflight: trigger member sync before rendering any child page.
+  // On first login, MemberFilter.syncOrCreate() needs one completed request
+  // to commit the member row. Without this, parallel dashboard calls race.
+  try {
+    await fetch(`${GATEWAY_URL}/api/members/me`, {
+      headers: {
+        Accept: "application/json",
+        ...(sessionCookie
+          ? { Cookie: `SESSION=${sessionCookie.value}` }
+          : {}),
+      },
+      cache: "no-store",
+    });
+  } catch {
+    // Best-effort — dashboard will retry if this fails
+  }
+
   const orgSlug = session.orgId ?? "unknown";
   const userName = session.name ?? "User";
   const userEmail = session.email ?? "";

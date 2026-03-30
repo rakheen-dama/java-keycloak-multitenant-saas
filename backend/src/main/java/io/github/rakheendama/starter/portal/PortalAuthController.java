@@ -44,24 +44,19 @@ public class PortalAuthController {
 
   record MessageResponse(String message) {}
 
-  record ExchangeRequest(@NotBlank String token) {}
+  record ExchangeRequest(@NotBlank String token, @NotBlank String orgId) {}
 
   record TokenResponse(String token, UUID customerId, String customerName) {}
 
   @PostMapping("/request-link")
   public ResponseEntity<MessageResponse> requestLink(
       @Valid @RequestBody RequestLinkRequest body, HttpServletRequest request) {
-    String schema =
-        orgSchemaMappingRepository
-            .findByOrgId(body.orgId())
-            .map(OrgSchemaMapping::getSchemaName)
-            .orElse(null);
+    String schema = resolveSchema(body.orgId());
     if (schema == null) {
       return ResponseEntity.ok(new MessageResponse(GENERIC_MESSAGE));
     }
 
-    // Resolve customer inside tenant scope, capture result
-    final UUID[] resolvedId = {null};
+    // Resolve customer and generate token — both inside tenant scope
     try {
       ScopedValue.where(RequestScopes.TENANT_ID, schema)
           .run(
@@ -69,19 +64,11 @@ public class PortalAuthController {
                 customerRepository
                     .findByEmail(body.email())
                     .filter(c -> "ACTIVE".equals(c.getStatus()))
-                    .ifPresent(c -> resolvedId[0] = c.getId());
+                    .ifPresent(
+                        c -> magicLinkService.generateToken(c.getId(), request.getRemoteAddr()));
               });
-    } catch (Exception e) {
-      log.warn("Error during customer lookup for org {}", body.orgId(), e);
-    }
-
-    // Call generateToken OUTSIDE the tenant scope — magic_link_tokens is in public schema
-    try {
-      if (resolvedId[0] != null) {
-        magicLinkService.generateToken(resolvedId[0], body.orgId(), request.getRemoteAddr());
-      }
     } catch (TooManyRequestsException e) {
-      throw e; // Re-throw for GlobalExceptionHandler to map to 429
+      throw e;
     } catch (Exception e) {
       log.warn("Error during magic link generation for org {}", body.orgId(), e);
     }
@@ -91,28 +78,34 @@ public class PortalAuthController {
 
   @PostMapping("/exchange")
   public ResponseEntity<TokenResponse> exchange(@Valid @RequestBody ExchangeRequest body) {
-    // MagicLinkToken is in public schema — no scoped value needed for token lookup
-    var result = magicLinkService.exchangeToken(body.token());
-
-    String schema =
-        orgSchemaMappingRepository
-            .findByOrgId(result.orgId())
-            .map(OrgSchemaMapping::getSchemaName)
-            .orElse(null);
+    String schema = resolveSchema(body.orgId());
     if (schema == null) {
       throw new PortalAuthException("Organization not found");
     }
 
-    // Verify customer is still ACTIVE in the tenant schema
-    var customer =
+    // Exchange token and verify customer — both inside tenant scope
+    var result =
         ScopedValue.where(RequestScopes.TENANT_ID, schema)
-            .call(() -> customerRepository.findById(result.customerId()));
-    if (customer.isEmpty() || !"ACTIVE".equals(customer.get().getStatus())) {
-      throw new PortalAuthException("Customer account is not active");
-    }
+            .call(
+                () -> {
+                  UUID customerId = magicLinkService.exchangeToken(body.token());
 
-    String portalJwt = portalJwtService.issueToken(result.customerId(), result.orgId());
-    return ResponseEntity.ok(
-        new TokenResponse(portalJwt, result.customerId(), customer.get().getName()));
+                  var customer = customerRepository.findById(customerId);
+                  if (customer.isEmpty() || !"ACTIVE".equals(customer.get().getStatus())) {
+                    throw new PortalAuthException("Customer account is not active");
+                  }
+
+                  String portalJwt = portalJwtService.issueToken(customerId, body.orgId());
+                  return new TokenResponse(portalJwt, customerId, customer.get().getName());
+                });
+
+    return ResponseEntity.ok(result);
+  }
+
+  private String resolveSchema(String orgId) {
+    return orgSchemaMappingRepository
+        .findByOrgId(orgId)
+        .map(OrgSchemaMapping::getSchemaName)
+        .orElse(null);
   }
 }

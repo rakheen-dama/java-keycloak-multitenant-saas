@@ -63,14 +63,12 @@ class MagicLinkIntegrationTest {
 
   @BeforeEach
   void setUp() {
-    // Clean magic link tokens (public schema — no scoped value needed)
-    magicLinkTokenRepository.deleteAll();
-
-    // Seed customer in tenant schema
+    // Clean and seed inside tenant schema
     ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
         .where(RequestScopes.ORG_ID, orgSlug)
         .run(
             () -> {
+              magicLinkTokenRepository.deleteAll();
               customerRepository.deleteAll();
               var customer = new Customer(CUSTOMER_NAME, CUSTOMER_EMAIL, "Test Co", null);
               customer = customerRepository.save(customer);
@@ -125,7 +123,6 @@ class MagicLinkIntegrationTest {
 
   @Test
   void requestLink_rateLimitExceeded_returns429() throws Exception {
-    // Generate 3 tokens through the full controller path
     String requestBody =
         """
         { "email": "%s", "orgId": "%s" }
@@ -140,7 +137,6 @@ class MagicLinkIntegrationTest {
           .andExpect(status().isOk());
     }
 
-    // 4th request should hit rate limit
     mockMvc
         .perform(
             post("/api/portal/auth/request-link")
@@ -151,8 +147,9 @@ class MagicLinkIntegrationTest {
 
   @Test
   void exchange_validToken_returnsPortalJwt() throws Exception {
-    // Generate a token via the service
-    String rawToken = magicLinkService.generateToken(customerId, orgSlug, "127.0.0.1");
+    String rawToken =
+        ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
+            .call(() -> magicLinkService.generateToken(customerId, "127.0.0.1"));
 
     mockMvc
         .perform(
@@ -160,9 +157,9 @@ class MagicLinkIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    { "token": "%s" }
+                    { "token": "%s", "orgId": "%s" }
                     """
-                        .formatted(rawToken)))
+                        .formatted(rawToken, orgSlug)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.token").isNotEmpty())
         .andExpect(jsonPath("$.customerId").value(customerId.toString()))
@@ -171,13 +168,16 @@ class MagicLinkIntegrationTest {
 
   @Test
   void exchange_expiredToken_returns401() throws Exception {
-    // Insert an expired token directly into the public schema
     String rawToken = "expired-test-token-" + UUID.randomUUID();
     String tokenHash = MagicLinkService.hashToken(rawToken);
-    var expiredToken =
-        new MagicLinkToken(
-            customerId, orgSlug, tokenHash, Instant.now().minus(1, ChronoUnit.HOURS), "127.0.0.1");
-    magicLinkTokenRepository.save(expiredToken);
+    ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
+        .run(
+            () -> {
+              var expiredToken =
+                  new MagicLinkToken(
+                      customerId, tokenHash, Instant.now().minus(1, ChronoUnit.HOURS), "127.0.0.1");
+              magicLinkTokenRepository.save(expiredToken);
+            });
 
     mockMvc
         .perform(
@@ -185,38 +185,36 @@ class MagicLinkIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    { "token": "%s" }
+                    { "token": "%s", "orgId": "%s" }
                     """
-                        .formatted(rawToken)))
+                        .formatted(rawToken, orgSlug)))
         .andExpect(status().isUnauthorized());
   }
 
   @Test
   void exchange_usedToken_returns401() throws Exception {
-    String rawToken = magicLinkService.generateToken(customerId, orgSlug, "127.0.0.1");
+    String rawToken =
+        ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
+            .call(() -> magicLinkService.generateToken(customerId, "127.0.0.1"));
 
-    // First exchange succeeds
+    String exchangeBody =
+        """
+        { "token": "%s", "orgId": "%s" }
+        """
+            .formatted(rawToken, orgSlug);
+
     mockMvc
         .perform(
             post("/api/portal/auth/exchange")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    { "token": "%s" }
-                    """
-                        .formatted(rawToken)))
+                .content(exchangeBody))
         .andExpect(status().isOk());
 
-    // Second exchange fails — token already used
     mockMvc
         .perform(
             post("/api/portal/auth/exchange")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    { "token": "%s" }
-                    """
-                        .formatted(rawToken)))
+                .content(exchangeBody))
         .andExpect(status().isUnauthorized());
   }
 
@@ -228,14 +226,17 @@ class MagicLinkIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    { "token": "totally-invalid-garbage-token" }
-                    """))
+                    { "token": "totally-invalid-garbage-token", "orgId": "%s" }
+                    """
+                        .formatted(orgSlug)))
         .andExpect(status().isUnauthorized());
   }
 
   @Test
   void portalJwt_containsCorrectClaims() throws Exception {
-    String rawToken = magicLinkService.generateToken(customerId, orgSlug, "127.0.0.1");
+    String rawToken =
+        ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
+            .call(() -> magicLinkService.generateToken(customerId, "127.0.0.1"));
 
     var result =
         mockMvc
@@ -244,16 +245,15 @@ class MagicLinkIntegrationTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
-                        { "token": "%s" }
+                        { "token": "%s", "orgId": "%s" }
                         """
-                            .formatted(rawToken)))
+                            .formatted(rawToken, orgSlug)))
             .andExpect(status().isOk())
             .andReturn();
 
     String jwtToken =
         com.jayway.jsonpath.JsonPath.read(result.getResponse().getContentAsString(), "$.token");
 
-    // Parse and verify JWT claims
     var signedJwt = SignedJWT.parse(jwtToken);
     var claims = signedJwt.getJWTClaimsSet();
 
@@ -266,17 +266,13 @@ class MagicLinkIntegrationTest {
 
   @Test
   void portalAuthFilter_validJwt_allowsPortalRequest() throws Exception {
-    // Issue a portal JWT directly
     String portalJwt = portalJwtService.issueToken(customerId, orgSlug);
 
-    // GET /api/portal/projects — no controller yet, but filter should NOT return 401
-    // It should return 404 (no mapping) instead of 401 (auth failure)
     var result =
         mockMvc
             .perform(get("/api/portal/projects").header("Authorization", "Bearer " + portalJwt))
             .andReturn();
 
-    // The filter should pass — the response should NOT be 401
     assertThat(result.getResponse().getStatus()).isNotEqualTo(401);
   }
 }
