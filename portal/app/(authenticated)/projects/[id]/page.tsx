@@ -62,6 +62,7 @@ export default function PortalProjectDetailPage() {
         router.replace("/");
         return;
       }
+      setError(err instanceof Error ? err.message : "Failed to send comment");
     } finally {
       setIsSending(false);
     }
