@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { MessageSquare, Send, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { MessageSquare, Send, Loader2, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { portalApi } from "@/lib/portal-api";
+import { portalApi, PortalApiError } from "@/lib/portal-api";
+import { clearPortalAuth } from "@/lib/portal-auth";
 
 interface PortalComment {
   id: string;
@@ -36,15 +38,18 @@ export function PortalCommentSection({
   projectId,
   initialComments,
 }: PortalCommentSectionProps) {
+  const router = useRouter();
   const [comments, setComments] = useState<PortalComment[]>(initialComments);
   const [newComment, setNewComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const content = newComment.trim();
     if (!content || isSubmitting) return;
     setIsSubmitting(true);
+    setError(null);
     try {
       const comment = await portalApi.post<PortalComment>(
         `/api/portal/projects/${projectId}/comments`,
@@ -52,8 +57,15 @@ export function PortalCommentSection({
       );
       setComments((prev) => [...prev, comment]);
       setNewComment("");
-    } catch {
-      // silently fail — user can retry
+    } catch (err) {
+      if (err instanceof PortalApiError && err.status === 401) {
+        clearPortalAuth();
+        router.replace("/portal");
+        return;
+      }
+      setError(
+        err instanceof Error ? err.message : "Failed to post comment",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -97,6 +109,16 @@ export function PortalCommentSection({
               </p>
             </div>
           ))}
+        </div>
+      )}
+
+      {error && (
+        <div
+          className="flex items-center gap-2 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-300"
+          role="alert"
+        >
+          <AlertCircle className="size-4 shrink-0" />
+          {error}
         </div>
       )}
 

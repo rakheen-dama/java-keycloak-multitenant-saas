@@ -6,9 +6,6 @@
 
 import { getPortalToken } from "./portal-auth";
 
-const BACKEND_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
-
 export class PortalApiError extends Error {
   constructor(
     public status: number,
@@ -31,13 +28,14 @@ async function portalRequest<T>(
   const token = getPortalToken();
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
+    Accept: "application/json",
   };
 
   if (token) {
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${BACKEND_URL}${endpoint}`, {
+  const response = await fetch(endpoint, {
     method: options.method || "GET",
     headers,
     body: options.body ? JSON.stringify(options.body) : undefined,
