@@ -1,7 +1,9 @@
-// Server-side API client for the BFF pattern.
+// Client-side API helper for the BFF pattern.
 // The frontend NEVER handles JWTs. All calls use relative URLs through
 // next.config.ts rewrites -> gateway (port 8443) -> backend (port 8080).
-// Use only in Server Components, Server Actions, and Route Handlers.
+// Use only in Client Components (browser context) where Next.js rewrites
+// proxy relative paths. Server-side code (Server Components, Server Actions,
+// Route Handlers) should use the GATEWAY_URL env var directly.
 
 export class ApiError extends Error {
   constructor(

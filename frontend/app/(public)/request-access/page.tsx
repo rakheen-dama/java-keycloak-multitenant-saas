@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,14 +24,10 @@ import {
 import { CheckCircle2, Loader2 } from "lucide-react";
 import { submitAccessRequest, verifyAccessRequestOtp } from "./actions";
 import { COUNTRIES, INDUSTRIES } from "@/lib/access-request-data";
-
-interface FormFields {
-  email: string;
-  fullName: string;
-  organizationName: string;
-  country: string;
-  industry: string;
-}
+import {
+  accessRequestSchema,
+  type AccessRequestFormData,
+} from "@/lib/schemas/access-request";
 
 function formatTime(totalSeconds: number): string {
   const minutes = Math.floor(totalSeconds / 60);
@@ -46,12 +44,24 @@ export default function RequestAccessPage() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [otp, setOtp] = useState("");
   const [secondsLeft, setSecondsLeft] = useState(0);
-  const [fields, setFields] = useState<FormFields>({
-    email: "",
-    fullName: "",
-    organizationName: "",
-    country: "",
-    industry: "",
+
+  const {
+    register,
+    handleSubmit: rhfHandleSubmit,
+    setValue,
+    getValues,
+    watch,
+    formState: { errors, isValid },
+  } = useForm<AccessRequestFormData>({
+    resolver: zodResolver(accessRequestSchema),
+    mode: "onChange",
+    defaultValues: {
+      email: "",
+      fullName: "",
+      organizationName: "",
+      country: "",
+      industry: "",
+    },
   });
 
   useEffect(() => {
@@ -65,26 +75,12 @@ export default function RequestAccessPage() {
     return () => clearInterval(interval);
   }, [secondsLeft]);
 
-  function updateField(key: keyof FormFields, value: string) {
-    setFields((prev) => ({ ...prev, [key]: value }));
-  }
-
-  function isFormValid(): boolean {
-    return (
-      fields.email.trim() !== "" &&
-      fields.fullName.trim() !== "" &&
-      fields.organizationName.trim() !== "" &&
-      fields.country !== "" &&
-      fields.industry !== ""
-    );
-  }
-
   const handleResend = useCallback(async () => {
     setOtpError(null);
     setError(null);
     setIsSubmitting(true);
     try {
-      const result = await submitAccessRequest({ ...fields });
+      const result = await submitAccessRequest(getValues());
       if (result.success) {
         setSuccessMessage(result.message ?? "Verification code sent.");
         setSecondsLeft((result.expiresInMinutes ?? 10) * 60);
@@ -97,14 +93,13 @@ export default function RequestAccessPage() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [fields]);
+  }, [getValues]);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function onSubmit(data: AccessRequestFormData) {
     setError(null);
     setIsSubmitting(true);
     try {
-      const result = await submitAccessRequest({ ...fields });
+      const result = await submitAccessRequest(data);
       if (result.success) {
         setSuccessMessage(result.message ?? "Verification code sent.");
         setSecondsLeft((result.expiresInMinutes ?? 10) * 60);
@@ -124,7 +119,7 @@ export default function RequestAccessPage() {
     setOtpError(null);
     setIsVerifying(true);
     try {
-      const result = await verifyAccessRequestOtp(fields.email.trim(), otp);
+      const result = await verifyAccessRequestOtp(getValues("email").trim(), otp);
       if (result.success) {
         setStep(3);
       } else {
@@ -177,7 +172,7 @@ export default function RequestAccessPage() {
           <p className="text-sm text-slate-600 dark:text-slate-400">
             Enter the verification code sent to{" "}
             <span className="font-medium text-slate-900 dark:text-slate-100">
-              {fields.email}
+              {getValues("email")}
             </span>{" "}
             to continue.
           </p>
@@ -275,7 +270,7 @@ export default function RequestAccessPage() {
       </CardHeader>
       <CardContent>
         <form
-          onSubmit={handleSubmit}
+          onSubmit={rhfHandleSubmit(onSubmit)}
           data-testid="request-access-form"
           className="space-y-4"
         >
@@ -286,10 +281,12 @@ export default function RequestAccessPage() {
               data-testid="email-input"
               type="email"
               placeholder="you@company.com"
-              value={fields.email}
-              onChange={(e) => updateField("email", e.target.value)}
-              required
+              {...register("email")}
+              aria-invalid={errors.email ? true : undefined}
             />
+            {errors.email && (
+              <p className="text-sm text-red-600" role="alert">{errors.email.message}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -299,10 +296,12 @@ export default function RequestAccessPage() {
               data-testid="full-name-input"
               type="text"
               placeholder="Jane Smith"
-              value={fields.fullName}
-              onChange={(e) => updateField("fullName", e.target.value)}
-              required
+              {...register("fullName")}
+              aria-invalid={errors.fullName ? true : undefined}
             />
+            {errors.fullName && (
+              <p className="text-sm text-red-600" role="alert">{errors.fullName.message}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -312,17 +311,19 @@ export default function RequestAccessPage() {
               data-testid="org-name-input"
               type="text"
               placeholder="Acme Corp"
-              value={fields.organizationName}
-              onChange={(e) => updateField("organizationName", e.target.value)}
-              required
+              {...register("organizationName")}
+              aria-invalid={errors.organizationName ? true : undefined}
             />
+            {errors.organizationName && (
+              <p className="text-sm text-red-600" role="alert">{errors.organizationName.message}</p>
+            )}
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="country">Country</Label>
             <Select
-              value={fields.country}
-              onValueChange={(value) => updateField("country", value)}
+              value={watch("country")}
+              onValueChange={(value) => setValue("country", value, { shouldValidate: true })}
             >
               <SelectTrigger id="country" data-testid="country-select" className="w-full">
                 <SelectValue placeholder="Select a country" />
@@ -335,13 +336,16 @@ export default function RequestAccessPage() {
                 ))}
               </SelectContent>
             </Select>
+            {errors.country && (
+              <p className="text-sm text-red-600" role="alert">{errors.country.message}</p>
+            )}
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="industry">Industry</Label>
             <Select
-              value={fields.industry}
-              onValueChange={(value) => updateField("industry", value)}
+              value={watch("industry")}
+              onValueChange={(value) => setValue("industry", value, { shouldValidate: true })}
             >
               <SelectTrigger id="industry" data-testid="industry-select" className="w-full">
                 <SelectValue placeholder="Select an industry" />
@@ -354,6 +358,9 @@ export default function RequestAccessPage() {
                 ))}
               </SelectContent>
             </Select>
+            {errors.industry && (
+              <p className="text-sm text-red-600" role="alert">{errors.industry.message}</p>
+            )}
           </div>
 
           {error && (
@@ -371,7 +378,7 @@ export default function RequestAccessPage() {
             variant="accent"
             size="lg"
             className="w-full"
-            disabled={!isFormValid() || isSubmitting}
+            disabled={!isValid || isSubmitting}
           >
             {isSubmitting ? (
               <><Loader2 className="animate-spin" />Submitting...</>

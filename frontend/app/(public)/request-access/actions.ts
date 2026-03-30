@@ -1,16 +1,14 @@
 "use server";
 
+import {
+  accessRequestSchema,
+  otpVerifySchema,
+  type AccessRequestFormData,
+} from "@/lib/schemas/access-request";
+
 // In the template there is only one auth mode (Keycloak BFF).
 // Server actions call the gateway via absolute URL (rewrites only apply in the browser).
 const GATEWAY_URL = process.env.GATEWAY_URL ?? "http://localhost:8443";
-
-interface AccessRequestData {
-  email: string;
-  fullName: string;
-  organizationName: string;
-  country: string;
-  industry: string;
-}
 
 interface AccessRequestResult {
   success: boolean;
@@ -20,15 +18,15 @@ interface AccessRequestResult {
 }
 
 export async function submitAccessRequest(
-  data: AccessRequestData,
+  data: AccessRequestFormData,
 ): Promise<AccessRequestResult> {
-  const { email, fullName, organizationName, country, industry } = data;
+  const parsed = accessRequestSchema.safeParse(data);
+  if (!parsed.success) {
+    const firstError = parsed.error.issues[0]?.message ?? "Invalid input.";
+    return { success: false, error: firstError };
+  }
 
-  if (!email?.trim()) return { success: false, error: "Email is required." };
-  if (!fullName?.trim()) return { success: false, error: "Full name is required." };
-  if (!organizationName?.trim()) return { success: false, error: "Organisation name is required." };
-  if (!country?.trim()) return { success: false, error: "Country is required." };
-  if (!industry?.trim()) return { success: false, error: "Industry is required." };
+  const { email, fullName, organizationName, country, industry } = parsed.data;
 
   try {
     const response = await fetch(`${GATEWAY_URL}/api/access-requests`, {
@@ -70,8 +68,12 @@ export async function verifyAccessRequestOtp(
   email: string,
   otp: string,
 ): Promise<VerifyOtpResult> {
+  const parsed = otpVerifySchema.safeParse({ otp });
+  if (!parsed.success) {
+    const firstError = parsed.error.issues[0]?.message ?? "Invalid verification code.";
+    return { success: false, error: firstError };
+  }
   if (!email?.trim()) return { success: false, error: "Email is required." };
-  if (!otp?.trim()) return { success: false, error: "Verification code is required." };
 
   try {
     const response = await fetch(`${GATEWAY_URL}/api/access-requests/verify`, {
