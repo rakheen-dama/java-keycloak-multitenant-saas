@@ -33,17 +33,20 @@ public class MagicLinkService {
   private final TransactionTemplate transactionTemplate;
   private final Optional<JavaMailSender> mailSender;
   private final String senderAddress;
+  private final String portalBaseUrl;
   private final SecureRandom secureRandom;
 
   public MagicLinkService(
       MagicLinkTokenRepository tokenRepository,
       TransactionTemplate transactionTemplate,
       Optional<JavaMailSender> mailSender,
-      @Value("${starter.email.sender-address:noreply@starter.example.com}") String senderAddress) {
+      @Value("${starter.email.sender-address:noreply@starter.example.com}") String senderAddress,
+      @Value("${starter.portal.base-url:http://localhost:3002}") String portalBaseUrl) {
     this.tokenRepository = tokenRepository;
     this.transactionTemplate = transactionTemplate;
     this.mailSender = mailSender;
     this.senderAddress = senderAddress;
+    this.portalBaseUrl = portalBaseUrl;
     try {
       this.secureRandom = SecureRandom.getInstanceStrong();
     } catch (NoSuchAlgorithmException e) {
@@ -56,12 +59,12 @@ public class MagicLinkService {
    * tenant-scoped context (RequestScopes.TENANT_ID bound). Returns the raw token (only time it
    * exists in memory).
    */
-  public String generateToken(UUID customerId, String clientIp) {
+  public String generateToken(UUID customerId, String orgId, String clientIp) {
     var result = persistToken(customerId, clientIp);
 
     // Send email outside the transaction (fire-and-forget)
     try {
-      sendMagicLinkEmail(result.rawToken());
+      sendMagicLinkEmail(result.rawToken(), orgId);
     } catch (Exception e) {
       log.warn("Failed to send magic link email for customer {}", customerId, e);
     }
@@ -129,7 +132,7 @@ public class MagicLinkService {
     }
   }
 
-  private void sendMagicLinkEmail(String rawToken) {
+  private void sendMagicLinkEmail(String rawToken, String orgId) {
     if (mailSender.isEmpty()) {
       log.info("No mail sender configured — magic link email not sent");
       return;
@@ -142,8 +145,11 @@ public class MagicLinkService {
       helper.setSubject("Your login link");
       helper.setText(
           "Click the link below to log in to your portal:\n\n"
-              + "https://portal.example.com/auth/exchange?token="
+              + portalBaseUrl
+              + "/auth/exchange?token="
               + rawToken
+              + "&org="
+              + orgId
               + "\n\nThis link expires in "
               + TOKEN_TTL_MINUTES
               + " minutes.",

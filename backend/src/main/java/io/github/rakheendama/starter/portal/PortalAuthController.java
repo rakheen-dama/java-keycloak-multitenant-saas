@@ -65,7 +65,9 @@ public class PortalAuthController {
                     .findByEmail(body.email())
                     .filter(c -> "ACTIVE".equals(c.getStatus()))
                     .ifPresent(
-                        c -> magicLinkService.generateToken(c.getId(), request.getRemoteAddr()));
+                        c ->
+                            magicLinkService.generateToken(
+                                c.getId(), body.orgId(), request.getRemoteAddr()));
               });
     } catch (TooManyRequestsException e) {
       throw e;
