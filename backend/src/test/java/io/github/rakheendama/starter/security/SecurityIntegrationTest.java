@@ -61,7 +61,7 @@ class SecurityIntegrationTest {
 
     // Authenticated request with a JWT carrying the provisioned org
     // Should pass auth (not 401) and pass TenantFilter (not 403)
-    // Returns 404 because no /api/projects controller exists
+    // Returns 200 with empty project list (tenant resolved successfully)
     mockMvc
         .perform(
             get("/api/projects")
@@ -71,7 +71,7 @@ class SecurityIntegrationTest {
                             j ->
                                 j.subject("user_123")
                                     .claim("organization", List.of(orgAlias)))))
-        .andExpect(status().isNotFound());
+        .andExpect(status().isOk());
   }
 
   @Test
