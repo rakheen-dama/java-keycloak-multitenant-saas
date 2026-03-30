@@ -17,6 +17,13 @@ spring:
           issuer-uri: http://localhost:8180/realms/starter
           jwk-set-uri: http://localhost:8180/realms/starter/protocol/openid-connect/certs
 
+keycloak:
+  admin:
+    auth-server-url: http://localhost:8180
+    realm: starter
+    username: admin
+    password: admin
+
 logging:
   level:
     io.github.rakheendama.starter: DEBUG
