@@ -120,6 +120,8 @@ Example: `orgSlug = "acme-corp"` → `tenant_a3f2b1c4d5e6`
 | T4B | Frontend: Members page + invite dialog | #13 | Done |
 | T5A | Backend: Customer + Project entities + CRUD | #14 | Done |
 | T5B | Backend: Comment entity + member-authored CRUD | #15 | Done |
+| T5C | Frontend: Dashboard + Projects pages | #16 | Done |
+| T5D | Frontend: Customers pages | #17 | Done |
 
 ## Anti-Patterns (Do NOT)
 
