@@ -10,6 +10,7 @@ const GATEWAY_URL = process.env.GATEWAY_URL ?? "http://localhost:8443";
 export interface CustomerSummary {
   id: string;
   name: string;
+  email: string;
 }
 
 export interface MemberSummary {
@@ -124,6 +125,30 @@ function parseError(e: unknown, fallback: string): string {
     return "Session expired. Please sign in again.";
   }
   return fallback;
+}
+
+// ── Session helpers ────────────────────────────────────────────────
+
+interface OrgIdResult {
+  success: boolean;
+  data?: string;
+  error?: string;
+}
+
+export async function getOrgId(): Promise<OrgIdResult> {
+  try {
+    const res = await gatewayFetch("/bff/me");
+    if (res.ok) {
+      const session = await res.json();
+      return { success: true, data: session.orgId ?? "" };
+    }
+    return { success: false, error: "Failed to read session." };
+  } catch (e) {
+    return {
+      success: false,
+      error: parseError(e, "Unable to reach the server."),
+    };
+  }
 }
 
 // ── Queries ─────────────────────────────────────────────────────────

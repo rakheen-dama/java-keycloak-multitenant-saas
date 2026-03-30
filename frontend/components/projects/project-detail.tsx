@@ -12,9 +12,11 @@ import {
   updateProjectStatus,
   type ProjectResponse,
 } from "@/app/(app)/projects/actions";
+import { SharePortalDialog } from "@/components/projects/share-portal-dialog";
 
 interface ProjectDetailProps {
   project: ProjectResponse;
+  orgId: string;
 }
 
 const statusBadgeVariant: Record<string, "success" | "warning" | "neutral"> = {
@@ -31,8 +33,9 @@ function formatDate(dateStr: string): string {
   });
 }
 
-export function ProjectDetail({ project }: ProjectDetailProps) {
+export function ProjectDetail({ project, orgId }: ProjectDetailProps) {
   const [isUpdating, setIsUpdating] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
   const router = useRouter();
 
   async function handleStatusChange(newStatus: string) {
@@ -77,12 +80,18 @@ export function ProjectDetail({ project }: ProjectDetailProps) {
               <Button
                 variant="outline"
                 size="sm"
-                disabled
-                title="Coming soon — wired in T6C"
+                onClick={() => setShareOpen(true)}
+                data-testid="share-portal-link-btn"
               >
                 <Share2 className="mr-2 size-4" />
                 Share Portal Link
               </Button>
+              <SharePortalDialog
+                open={shareOpen}
+                onOpenChange={setShareOpen}
+                customerEmail={project.customer.email}
+                orgId={orgId}
+              />
 
               {project.status === "ACTIVE" && (
                 <Button

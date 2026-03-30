@@ -1,4 +1,4 @@
-import { getProject, getComments, getCurrentMember } from "../actions";
+import { getProject, getComments, getCurrentMember, getOrgId } from "../actions";
 import { ProjectDetail } from "@/components/projects/project-detail";
 import { CommentSection } from "@/components/projects/comment-section";
 
@@ -13,11 +13,13 @@ export default async function ProjectDetailPage({
 }: ProjectDetailPageProps) {
   const { id } = await params;
 
-  const [projectResult, commentsResult, memberResult] = await Promise.all([
-    getProject(id),
-    getComments(id),
-    getCurrentMember(),
-  ]);
+  const [projectResult, commentsResult, memberResult, orgIdResult] =
+    await Promise.all([
+      getProject(id),
+      getComments(id),
+      getCurrentMember(),
+      getOrgId(),
+    ]);
 
   if (!projectResult.success || !projectResult.data) {
     return (
@@ -34,11 +36,12 @@ export default async function ProjectDetailPage({
   const currentMemberId = memberResult.success
     ? (memberResult.data?.id ?? "")
     : "";
+  const orgId = orgIdResult.success ? (orgIdResult.data ?? "") : "";
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
       <div className="space-y-8">
-        <ProjectDetail project={project} />
+        <ProjectDetail project={project} orgId={orgId} />
 
         <CommentSection
           projectId={project.id}
