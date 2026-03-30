@@ -112,6 +112,7 @@ Example: `orgSlug = "acme-corp"` → `tenant_a3f2b1c4d5e6`
 | T2A | Gateway Maven project + security config | #5 | Done |
 | T2B | Backend security + filters | #6 | Done |
 | T2C | Keycloak bootstrap + integration tests | #7 | Done |
+| T3A | AccessRequest entity + OTP + public endpoints | #8 | Done |
 
 ## Anti-Patterns (Do NOT)
 
