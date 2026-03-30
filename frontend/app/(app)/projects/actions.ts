@@ -23,8 +23,11 @@ export interface ProjectResponse {
   title: string;
   description: string | null;
   status: string;
-  customer: CustomerSummary;
-  createdBy: MemberSummary;
+  customerId: string;
+  customerName: string;
+  createdBy: string;
+  createdByName: string;
+  customerEmail?: string;
   createdAt: string;
 }
 

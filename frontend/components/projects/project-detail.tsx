@@ -89,7 +89,7 @@ export function ProjectDetail({ project, orgId }: ProjectDetailProps) {
               <SharePortalDialog
                 open={shareOpen}
                 onOpenChange={setShareOpen}
-                customerEmail={project.customer.email}
+                customerEmail={project.customerEmail ?? ""}
                 orgId={orgId}
               />
 
@@ -126,7 +126,7 @@ export function ProjectDetail({ project, orgId }: ProjectDetailProps) {
                 Customer
               </dt>
               <dd className="mt-1 text-sm text-foreground">
-                {project.customer.name}
+                {project.customerName ?? "—"}
               </dd>
             </div>
             <div>
@@ -134,7 +134,7 @@ export function ProjectDetail({ project, orgId }: ProjectDetailProps) {
                 Created By
               </dt>
               <dd className="mt-1 text-sm text-foreground">
-                {project.createdBy.displayName}
+                {project.createdByName ?? "—"}
               </dd>
             </div>
             <div>

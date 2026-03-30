@@ -61,7 +61,7 @@ export function RecentProjects({ projects }: RecentProjectsProps) {
               </Link>
             </TableCell>
             <TableCell className="text-muted-foreground">
-              {project.customer.name}
+              {project.customerName ?? "—"}
             </TableCell>
             <TableCell>
               <Badge variant={statusBadgeVariant[project.status] ?? "neutral"}>

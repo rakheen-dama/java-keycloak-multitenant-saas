@@ -119,7 +119,7 @@ export function ProjectList({ projects }: ProjectListProps) {
                 </Link>
               </TableCell>
               <TableCell className="text-muted-foreground">
-                {project.customer.name}
+                {project.customerName ?? "—"}
               </TableCell>
               <TableCell>
                 <Badge
@@ -129,7 +129,7 @@ export function ProjectList({ projects }: ProjectListProps) {
                 </Badge>
               </TableCell>
               <TableCell className="text-muted-foreground">
-                {project.createdBy.displayName}
+                {project.createdByName ?? "—"}
               </TableCell>
               <TableCell className="text-muted-foreground">
                 {formatDate(project.createdAt)}

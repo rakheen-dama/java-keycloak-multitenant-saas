@@ -110,7 +110,7 @@ export default async function CustomerDetailPage({
                       </Badge>
                     </TableCell>
                     <TableCell className="text-muted-foreground">
-                      {project.createdBy.displayName}
+                      {project.createdByName ?? "—"}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
                       {formatDate(project.createdAt)}
