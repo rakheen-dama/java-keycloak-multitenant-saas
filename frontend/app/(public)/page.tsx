@@ -28,6 +28,15 @@ export default function LandingPage() {
           Submit your details for admin review. You&apos;ll receive an email
           once your organisation has been provisioned.
         </p>
+        <div className="text-center text-sm text-slate-600 dark:text-slate-400">
+          Already have an account?{" "}
+          <Link
+            href="/oauth2/authorization/keycloak"
+            className="font-medium text-teal-600 hover:text-teal-500 dark:text-teal-400"
+          >
+            Sign in
+          </Link>
+        </div>
       </CardContent>
     </Card>
   );

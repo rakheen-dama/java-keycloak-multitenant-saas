@@ -12,6 +12,7 @@ interface SessionData {
   email?: string;
   name?: string;
   orgId?: string;
+  isPlatformAdmin?: boolean;
 }
 
 export default async function AppLayout({
@@ -42,6 +43,10 @@ export default async function AppLayout({
 
   if (!session.authenticated) {
     redirect("/oauth2/authorization/keycloak");
+  }
+
+  if (session.isPlatformAdmin && !session.orgId) {
+    redirect("/platform-admin/access-requests");
   }
 
   const orgSlug = session.orgId ?? "unknown";
