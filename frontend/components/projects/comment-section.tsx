@@ -70,10 +70,7 @@ export function CommentSection({
         )}
 
         <div className="border-t border-slate-200 pt-6 dark:border-slate-800">
-          <CommentForm
-            projectId={projectId}
-            currentMemberId={currentMemberId}
-          />
+          <CommentForm projectId={projectId} />
         </div>
       </CardContent>
     </Card>

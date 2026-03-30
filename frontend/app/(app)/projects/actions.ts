@@ -87,6 +87,12 @@ interface MemberResult {
   error?: string;
 }
 
+interface MemberListResult {
+  success: boolean;
+  data?: MemberResponse[];
+  error?: string;
+}
+
 interface ActionResult {
   success: boolean;
   error?: string;
@@ -201,6 +207,28 @@ export async function getComments(projectId: string): Promise<CommentListResult>
       errorBody?.error ??
       errorBody?.message ??
       "Failed to load comments.";
+    return { success: false, error: errorMessage };
+  } catch (e) {
+    return {
+      success: false,
+      error: parseError(e, "Unable to reach the server. Please try again later."),
+    };
+  }
+}
+
+export async function listMembers(): Promise<MemberListResult> {
+  try {
+    const res = await gatewayFetch("/api/members");
+    if (res.ok) {
+      const data: MemberResponse[] = await res.json();
+      return { success: true, data };
+    }
+    const errorBody = await res.json().catch(() => null);
+    const errorMessage =
+      errorBody?.detail ??
+      errorBody?.error ??
+      errorBody?.message ??
+      "Failed to load members.";
     return { success: false, error: errorMessage };
   } catch (e) {
     return {

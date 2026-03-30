@@ -10,7 +10,6 @@ import { addComment } from "@/app/(app)/projects/actions";
 
 interface CommentFormProps {
   projectId: string;
-  currentMemberId: string;
 }
 
 export function CommentForm({ projectId }: CommentFormProps) {
