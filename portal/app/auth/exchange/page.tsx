@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState, useTransition } from "react";
+import { Suspense, useEffect, useRef, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2, AlertCircle } from "lucide-react";
 import {
@@ -22,8 +22,13 @@ function ExchangeContent() {
   const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const exchangedRef = useRef(false);
 
   useEffect(() => {
+    // Guard against React strict mode double-invocation in dev
+    if (exchangedRef.current) return;
+    exchangedRef.current = true;
+
     const token = searchParams.get("token");
     const orgId = searchParams.get("org");
     if (!token || !orgId) {
