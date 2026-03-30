@@ -52,6 +52,14 @@ public final class RequestScopes {
     return TENANT_ID.get();
   }
 
+  /** Returns the org ID (Keycloak alias / slug). Throws if not bound by filter chain. */
+  public static String requireOrgId() {
+    if (!ORG_ID.isBound()) {
+      throw new IllegalStateException("Org context not available — ORG_ID not bound");
+    }
+    return ORG_ID.get();
+  }
+
   /** Returns the current member's org role, or null if not bound. */
   public static String getOrgRole() {
     return ORG_ROLE.isBound() ? ORG_ROLE.get() : null;

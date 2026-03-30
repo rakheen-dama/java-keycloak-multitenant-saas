@@ -1,9 +1,9 @@
 package io.github.rakheendama.starter.member;
 
-import io.github.rakheendama.starter.exception.ForbiddenException;
 import io.github.rakheendama.starter.exception.InvalidStateException;
 import io.github.rakheendama.starter.exception.ResourceNotFoundException;
 import io.github.rakheendama.starter.multitenancy.RequestScopes;
+import io.github.rakheendama.starter.organization.OrganizationRepository;
 import io.github.rakheendama.starter.provisioning.KeycloakProvisioningClient;
 import java.util.List;
 import java.util.Set;
@@ -17,12 +17,15 @@ public class MemberService {
   private static final Set<String> VALID_ROLES = Set.of("owner", "member");
 
   private final MemberRepository memberRepository;
+  private final OrganizationRepository organizationRepository;
   private final KeycloakProvisioningClient keycloakProvisioningClient;
 
   public MemberService(
       MemberRepository memberRepository,
+      OrganizationRepository organizationRepository,
       KeycloakProvisioningClient keycloakProvisioningClient) {
     this.memberRepository = memberRepository;
+    this.organizationRepository = organizationRepository;
     this.keycloakProvisioningClient = keycloakProvisioningClient;
   }
 
@@ -41,8 +44,16 @@ public class MemberService {
 
   public void inviteMember(String email) {
     RequestScopes.requireOwner();
-    String orgId = RequestScopes.ORG_ID.get();
-    keycloakProvisioningClient.inviteUser(orgId, email);
+    var org =
+        organizationRepository
+            .findAll()
+            .stream()
+            .findFirst()
+            .orElseThrow(
+                () ->
+                    new IllegalStateException(
+                        "Organization record not found in tenant schema"));
+    keycloakProvisioningClient.inviteUser(org.getKeycloakOrgId(), email);
   }
 
   @Transactional

@@ -64,10 +64,8 @@ public class MemberFilter extends OncePerRequestFilter {
       log.info("First login for Keycloak user '{}' — syncing member", keycloakUserId);
       member = memberSyncService.syncOrCreate(jwt, keycloakOrgId);
     } else {
+      // Existing member — use directly, no DB write on every request
       member = memberOpt.get();
-      // Sync identity fields (email, displayName) on every request.
-      // Role is NOT synced here — use PATCH /api/members/{id}/role.
-      member = memberSyncService.syncOrCreate(jwt, JwtUtils.extractOrgId(jwt));
     }
 
     ScopedFilterChain.runScoped(
