@@ -31,16 +31,16 @@ interface ActionResult {
 async function gatewayFetch(path: string, options: RequestInit = {}) {
   const cookieStore = await cookies();
   const sessionCookie = cookieStore.get("SESSION");
-  const cookieHeader = sessionCookie
-    ? `SESSION=${sessionCookie.value}`
-    : "";
+  if (!sessionCookie) {
+    throw new Error("SESSION_EXPIRED");
+  }
 
   const res = await fetch(`${GATEWAY_URL}${path}`, {
     ...options,
     headers: {
       "Content-Type": "application/json",
       Accept: "application/json",
-      ...(cookieHeader ? { Cookie: cookieHeader } : {}),
+      Cookie: `SESSION=${sessionCookie.value}`,
       ...options.headers,
     },
   });
@@ -62,11 +62,12 @@ export async function listAccessRequests(): Promise<ListResult> {
       errorBody?.message ??
       "Failed to load access requests.";
     return { success: false, error: errorMessage };
-  } catch {
-    return {
-      success: false,
-      error: "Unable to reach the server. Please try again later.",
-    };
+  } catch (e) {
+    const msg =
+      e instanceof Error && e.message === "SESSION_EXPIRED"
+        ? "Session expired. Please sign in again."
+        : "Unable to reach the server. Please try again later.";
+    return { success: false, error: msg };
   }
 }
 
@@ -89,11 +90,12 @@ export async function approveAccessRequest(id: string): Promise<ActionResult> {
       errorBody?.message ??
       "Failed to approve request.";
     return { success: false, error: errorMessage };
-  } catch {
-    return {
-      success: false,
-      error: "Unable to reach the server. Please try again later.",
-    };
+  } catch (e) {
+    const msg =
+      e instanceof Error && e.message === "SESSION_EXPIRED"
+        ? "Session expired. Please sign in again."
+        : "Unable to reach the server. Please try again later.";
+    return { success: false, error: msg };
   }
 }
 
@@ -116,10 +118,11 @@ export async function rejectAccessRequest(id: string): Promise<ActionResult> {
       errorBody?.message ??
       "Failed to reject request.";
     return { success: false, error: errorMessage };
-  } catch {
-    return {
-      success: false,
-      error: "Unable to reach the server. Please try again later.",
-    };
+  } catch (e) {
+    const msg =
+      e instanceof Error && e.message === "SESSION_EXPIRED"
+        ? "Session expired. Please sign in again."
+        : "Unable to reach the server. Please try again later.";
+    return { success: false, error: msg };
   }
 }

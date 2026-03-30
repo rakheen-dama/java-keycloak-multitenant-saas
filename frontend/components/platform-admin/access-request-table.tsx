@@ -116,7 +116,7 @@ export function AccessRequestTable({ requests }: AccessRequestTableProps) {
                       <TableCell>{request.industry}</TableCell>
                       <TableCell>
                         {new Date(request.createdAt).toLocaleDateString(
-                          "en-ZA",
+                          undefined,
                           {
                             year: "numeric",
                             month: "short",

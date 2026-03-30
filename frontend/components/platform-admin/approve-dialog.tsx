@@ -59,8 +59,8 @@ export function ApproveDialog({
           <AlertDialogDescription>
             Approve access request for{" "}
             <span className="font-semibold text-foreground">{orgName}</span>?
-            This will create a Keycloak organisation, provision a tenant schema,
-            and send an invitation to{" "}
+            This will provision the organisation and send an invitation email
+            to{" "}
             <span className="font-semibold text-foreground">{email}</span>.
           </AlertDialogDescription>
         </AlertDialogHeader>
