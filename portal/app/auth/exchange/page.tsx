@@ -27,7 +27,7 @@ function ExchangeContent() {
     const token = searchParams.get("token");
     const orgId = searchParams.get("org");
     if (!token || !orgId) {
-      setError("Invalid link — missing token or organization.");
+      setError("Invalid link - missing token or organization.");
       return;
     }
 
