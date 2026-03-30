@@ -67,7 +67,11 @@ public class GatewaySecurityConfig {
             csrf ->
                 csrf.csrfTokenRepository(csrfTokenRepository())
                     .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
-                    .ignoringRequestMatchers("/bff/csrf"))
+                    .ignoringRequestMatchers(
+                        "/bff/csrf",
+                        "/api/access-requests",
+                        "/api/access-requests/verify",
+                        "/api/portal/**"))
         .exceptionHandling(
             ex ->
                 ex.defaultAuthenticationEntryPointFor(
