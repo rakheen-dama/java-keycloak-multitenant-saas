@@ -15,7 +15,8 @@ CREATE TABLE access_requests (
     keycloak_org_id     VARCHAR(255),
     provisioning_error  TEXT,
     created_at          TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at          TIMESTAMPTZ NOT NULL DEFAULT now()
+    updated_at          TIMESTAMPTZ NOT NULL DEFAULT now(),
+    version             BIGINT NOT NULL DEFAULT 0
 );
 
 CREATE INDEX idx_access_requests_status ON access_requests (status);

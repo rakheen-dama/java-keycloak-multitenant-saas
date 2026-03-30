@@ -48,6 +48,13 @@ management:
     health:
       show-details: when-authorized
 
+keycloak:
+  admin:
+    auth-server-url: ${KEYCLOAK_ADMIN_URL:}
+    realm: ${KEYCLOAK_REALM:starter}
+    username: ${KEYCLOAK_ADMIN_USERNAME:admin}
+    password: ${KEYCLOAK_ADMIN_PASSWORD:admin}
+
 logging:
   level:
     io.github.rakheendama.starter: INFO
