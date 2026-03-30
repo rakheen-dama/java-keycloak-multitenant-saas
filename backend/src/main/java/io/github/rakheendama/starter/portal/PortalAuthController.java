@@ -67,7 +67,7 @@ public class PortalAuthController {
                     .ifPresent(
                         c ->
                             magicLinkService.generateToken(
-                                c.getId(), body.orgId(), request.getRemoteAddr()));
+                                c.getId(), c.getEmail(), body.orgId(), request.getRemoteAddr()));
               });
     } catch (TooManyRequestsException e) {
       throw e;

@@ -59,12 +59,13 @@ public class MagicLinkService {
    * tenant-scoped context (RequestScopes.TENANT_ID bound). Returns the raw token (only time it
    * exists in memory).
    */
-  public String generateToken(UUID customerId, String orgId, String clientIp) {
+  public String generateToken(
+      UUID customerId, String customerEmail, String orgId, String clientIp) {
     var result = persistToken(customerId, clientIp);
 
     // Send email outside the transaction (fire-and-forget)
     try {
-      sendMagicLinkEmail(result.rawToken(), orgId);
+      sendMagicLinkEmail(customerEmail, result.rawToken(), orgId);
     } catch (Exception e) {
       log.warn("Failed to send magic link email for customer {}", customerId, e);
     }
@@ -132,7 +133,7 @@ public class MagicLinkService {
     }
   }
 
-  private void sendMagicLinkEmail(String rawToken, String orgId) {
+  private void sendMagicLinkEmail(String recipientEmail, String rawToken, String orgId) {
     if (mailSender.isEmpty()) {
       log.info("No mail sender configured — magic link email not sent");
       return;
@@ -141,7 +142,7 @@ public class MagicLinkService {
       MimeMessage message = mailSender.get().createMimeMessage();
       MimeMessageHelper helper = new MimeMessageHelper(message, false);
       helper.setFrom(senderAddress);
-      helper.setTo(senderAddress); // Placeholder — real impl would resolve customer email
+      helper.setTo(recipientEmail);
       helper.setSubject("Your login link");
       helper.setText(
           "Click the link below to log in to your portal:\n\n"

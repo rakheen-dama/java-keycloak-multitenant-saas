@@ -149,7 +149,10 @@ class MagicLinkIntegrationTest {
   void exchange_validToken_returnsPortalJwt() throws Exception {
     String rawToken =
         ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
-            .call(() -> magicLinkService.generateToken(customerId, orgSlug, "127.0.0.1"));
+            .call(
+                () ->
+                    magicLinkService.generateToken(
+                        customerId, CUSTOMER_EMAIL, orgSlug, "127.0.0.1"));
 
     mockMvc
         .perform(
@@ -195,7 +198,10 @@ class MagicLinkIntegrationTest {
   void exchange_usedToken_returns401() throws Exception {
     String rawToken =
         ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
-            .call(() -> magicLinkService.generateToken(customerId, orgSlug, "127.0.0.1"));
+            .call(
+                () ->
+                    magicLinkService.generateToken(
+                        customerId, CUSTOMER_EMAIL, orgSlug, "127.0.0.1"));
 
     String exchangeBody =
         """
@@ -236,7 +242,10 @@ class MagicLinkIntegrationTest {
   void portalJwt_containsCorrectClaims() throws Exception {
     String rawToken =
         ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
-            .call(() -> magicLinkService.generateToken(customerId, orgSlug, "127.0.0.1"));
+            .call(
+                () ->
+                    magicLinkService.generateToken(
+                        customerId, CUSTOMER_EMAIL, orgSlug, "127.0.0.1"));
 
     var result =
         mockMvc
