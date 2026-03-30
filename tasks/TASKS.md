@@ -8,7 +8,7 @@ A standalone multitenant SaaS starter template built with Java 25, Spring Boot 4
 |------|------|-------|------|--------|--------|--------|
 | T1 | Infrastructure + Multitenancy Core | Backend + Compose | -- | L | T1A, T1B, T1C | **Done** |
 | T2 | Gateway + Auth | Gateway + Backend | T1 | L | T2A, T2B, T2C | **Done** |
-| T3 | Access Request + Provisioning | Backend + Frontend | T2 | L | T3A, T3B, T3C, T3D | |
+| T3 | Access Request + Provisioning | Backend + Frontend | T2 | L | T3A, T3B, T3C, T3D | T3A Done |
 | T4 | Members + Invitations | Backend + Frontend | T3 | M | T4A, T4B | |
 | T5 | Domain CRUD (Customer, Project, Comment) | Backend + Frontend | T4 | L | T5A, T5B, T5C, T5D | |
 | T6 | Portal + Magic Links | Backend + Frontend | T5 | L | T6A, T6B, T6C | |
