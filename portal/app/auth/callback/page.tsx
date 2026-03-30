@@ -1,25 +1,30 @@
 "use client";
 
-import { Suspense, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 import { setPortalToken, setPortalCustomerName } from "@/lib/portal-api";
 
 function CallbackContent() {
-  const router = useRouter();
   const searchParams = useSearchParams();
+  const processed = useRef(false);
 
   useEffect(() => {
+    if (processed.current) return;
+    processed.current = true;
+
     const token = searchParams.get("t");
     const name = searchParams.get("n");
 
     if (token) {
       setPortalToken(token);
       if (name) setPortalCustomerName(name);
-      router.replace("/projects");
+      // Full page navigation (not client-side router.replace) so the
+      // auth guard reads the token from localStorage on a fresh mount
+      window.location.href = "/projects";
     } else {
-      router.replace("/");
+      window.location.href = "/";
     }
-  }, [searchParams, router]);
+  }, [searchParams]);
 
   return null;
 }
