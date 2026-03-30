@@ -436,3 +436,30 @@ export async function deleteComment(commentId: string, projectId: string): Promi
     };
   }
 }
+
+// ── Portal link ───────────────────────────────────────────────────
+
+export async function sendPortalLink(
+  email: string,
+  orgId: string,
+): Promise<ActionResult> {
+  try {
+    const res = await gatewayFetch("/api/portal/auth/request-link", {
+      method: "POST",
+      body: JSON.stringify({ email, orgId }),
+    });
+    if (res.ok) {
+      return { success: true };
+    }
+    const errorBody = await res.json().catch(() => null);
+    return {
+      success: false,
+      error: errorBody?.detail ?? errorBody?.message ?? "Failed to send portal link.",
+    };
+  } catch (e) {
+    return {
+      success: false,
+      error: parseError(e, "Unable to reach the server. Please try again later."),
+    };
+  }
+}

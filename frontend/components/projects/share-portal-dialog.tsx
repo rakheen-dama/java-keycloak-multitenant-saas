@@ -12,7 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { apiPost, ApiError } from "@/lib/api";
+import { sendPortalLink } from "@/app/(app)/projects/actions";
 
 interface SharePortalDialogProps {
   open: boolean;
@@ -34,18 +34,15 @@ export function SharePortalDialog({
     setError(null);
     setIsSending(true);
     try {
-      await apiPost("/api/portal/auth/request-link", {
-        email: customerEmail,
-        orgId,
-      });
-      toast.success(`Magic link sent to ${customerEmail}`);
-      onOpenChange(false);
-    } catch (err) {
-      if (err instanceof ApiError) {
-        setError(err.message);
+      const result = await sendPortalLink(customerEmail, orgId);
+      if (result.success) {
+        toast.success(`Magic link sent to ${customerEmail}`);
+        onOpenChange(false);
       } else {
-        setError("An unexpected error occurred. Please try again.");
+        setError(result.error ?? "Failed to send portal link.");
       }
+    } catch {
+      setError("An unexpected error occurred. Please try again.");
     } finally {
       setIsSending(false);
     }
@@ -72,7 +69,7 @@ export function SharePortalDialog({
               Sending to
             </p>
             <p className="mt-0.5 text-sm font-medium text-slate-900 dark:text-slate-100">
-              {customerEmail}
+              {customerEmail || "No email available"}
             </p>
           </div>
           <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -97,7 +94,7 @@ export function SharePortalDialog({
           <Button
             variant="accent"
             onClick={handleSend}
-            disabled={isSending}
+            disabled={isSending || !customerEmail}
             data-testid="send-portal-link-btn"
           >
             {isSending ? (

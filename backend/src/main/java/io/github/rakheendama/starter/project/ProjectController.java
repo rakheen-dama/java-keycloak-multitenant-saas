@@ -95,21 +95,26 @@ public class ProjectController {
   }
 
   private List<ProjectResponse> toResponses(List<Project> projects) {
-    Map<UUID, String> customerNames = resolveCustomerNames(projects);
+    List<Customer> customers = resolveCustomers(projects);
+    Map<UUID, String> customerNames =
+        customers.stream().collect(Collectors.toMap(Customer::getId, Customer::getName));
+    Map<UUID, String> customerEmails =
+        customers.stream().collect(Collectors.toMap(Customer::getId, Customer::getEmail));
     Map<UUID, String> memberNames = resolveMemberNames(projects);
-    return projects.stream().map(p -> ProjectResponse.from(p, customerNames, memberNames)).toList();
+    return projects.stream()
+        .map(p -> ProjectResponse.from(p, customerNames, customerEmails, memberNames))
+        .toList();
   }
 
-  private Map<UUID, String> resolveCustomerNames(List<Project> projects) {
+  private List<Customer> resolveCustomers(List<Project> projects) {
     var customerIds =
         projects.stream()
             .map(Project::getCustomerId)
             .filter(java.util.Objects::nonNull)
             .distinct()
             .toList();
-    if (customerIds.isEmpty()) return Map.of();
-    return customerRepository.findAllById(customerIds).stream()
-        .collect(Collectors.toMap(Customer::getId, Customer::getName));
+    if (customerIds.isEmpty()) return List.of();
+    return customerRepository.findAllById(customerIds);
   }
 
   private Map<UUID, String> resolveMemberNames(List<Project> projects) {
@@ -142,12 +147,16 @@ public class ProjectController {
       String status,
       UUID customerId,
       String customerName,
+      String customerEmail,
       UUID createdBy,
       String createdByName,
       Instant createdAt,
       Instant updatedAt) {
     static ProjectResponse from(
-        Project p, Map<UUID, String> customerNames, Map<UUID, String> memberNames) {
+        Project p,
+        Map<UUID, String> customerNames,
+        Map<UUID, String> customerEmails,
+        Map<UUID, String> memberNames) {
       return new ProjectResponse(
           p.getId(),
           p.getTitle(),
@@ -155,6 +164,7 @@ public class ProjectController {
           p.getStatus(),
           p.getCustomerId(),
           customerNames.getOrDefault(p.getCustomerId(), "Unknown"),
+          customerEmails.getOrDefault(p.getCustomerId(), ""),
           p.getCreatedBy(),
           memberNames.getOrDefault(p.getCreatedBy(), "Unknown"),
           p.getCreatedAt(),
