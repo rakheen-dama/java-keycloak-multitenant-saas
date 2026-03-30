@@ -66,11 +66,7 @@ class SecurityIntegrationTest {
         .perform(
             get("/api/projects")
                 .with(
-                    jwt()
-                        .jwt(
-                            j ->
-                                j.subject("user_123")
-                                    .claim("organization", List.of(orgAlias)))))
+                    jwt().jwt(j -> j.subject("user_123").claim("organization", List.of(orgAlias)))))
         .andExpect(status().isOk());
   }
 
@@ -88,7 +84,8 @@ class SecurityIntegrationTest {
                                         "organization",
                                         Map.of(
                                             "nonexistent-org",
-                                            Map.of("id", "uuid-999", "roles", List.of("member")))))))
+                                            Map.of(
+                                                "id", "uuid-999", "roles", List.of("member")))))))
         .andExpect(status().isForbidden());
   }
 

@@ -33,9 +33,7 @@ public class PlatformAdminController {
       JwtAuthenticationToken auth) {
     platformSecurityService.requirePlatformAdmin(auth.getToken());
     return ResponseEntity.ok(
-        approvalService.listRequests(status).stream()
-            .map(AccessRequestResponse::from)
-            .toList());
+        approvalService.listRequests(status).stream().map(AccessRequestResponse::from).toList());
   }
 
   @PostMapping("/{id}/approve")
@@ -43,8 +41,7 @@ public class PlatformAdminController {
       @PathVariable UUID id, JwtAuthenticationToken auth) {
     platformSecurityService.requirePlatformAdmin(auth.getToken());
     return ResponseEntity.ok(
-        AccessRequestResponse.from(
-            approvalService.approve(id, auth.getToken().getSubject())));
+        AccessRequestResponse.from(approvalService.approve(id, auth.getToken().getSubject())));
   }
 
   @PostMapping("/{id}/reject")
@@ -52,8 +49,7 @@ public class PlatformAdminController {
       @PathVariable UUID id, JwtAuthenticationToken auth) {
     platformSecurityService.requirePlatformAdmin(auth.getToken());
     return ResponseEntity.ok(
-        AccessRequestResponse.from(
-            approvalService.reject(id, auth.getToken().getSubject())));
+        AccessRequestResponse.from(approvalService.reject(id, auth.getToken().getSubject())));
   }
 
   public record AccessRequestResponse(

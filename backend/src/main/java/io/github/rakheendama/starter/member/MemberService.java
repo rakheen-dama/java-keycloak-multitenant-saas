@@ -45,14 +45,10 @@ public class MemberService {
   public void inviteMember(String email) {
     RequestScopes.requireOwner();
     var org =
-        organizationRepository
-            .findAll()
-            .stream()
+        organizationRepository.findAll().stream()
             .findFirst()
             .orElseThrow(
-                () ->
-                    new IllegalStateException(
-                        "Organization record not found in tenant schema"));
+                () -> new IllegalStateException("Organization record not found in tenant schema"));
     keycloakProvisioningClient.inviteUser(org.getKeycloakOrgId(), email);
   }
 

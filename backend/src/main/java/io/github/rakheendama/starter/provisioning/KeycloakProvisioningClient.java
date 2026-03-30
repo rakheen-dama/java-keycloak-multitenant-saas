@@ -75,8 +75,7 @@ public class KeycloakProvisioningClient {
 
   @SuppressWarnings("unchecked")
   public String createOrganization(String name, String slug) {
-    var body =
-        Map.of("name", name, "alias", slug, "enabled", true, "redirectUrl", frontendBaseUrl);
+    var body = Map.of("name", name, "alias", slug, "enabled", true, "redirectUrl", frontendBaseUrl);
     try {
       var response =
           restClient
@@ -214,8 +213,7 @@ public class KeycloakProvisioningClient {
           HttpStatus.BAD_GATEWAY, "Invalid token response from Keycloak");
     }
     cachedToken = (String) response.get("access_token");
-    tokenExpiry =
-        Instant.now().plusSeconds(((Number) response.get("expires_in")).longValue() - 30);
+    tokenExpiry = Instant.now().plusSeconds(((Number) response.get("expires_in")).longValue() - 30);
     return cachedToken;
   }
 }

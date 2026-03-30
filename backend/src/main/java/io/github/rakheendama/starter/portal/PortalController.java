@@ -69,7 +69,8 @@ public class PortalController {
     findOwnedProject(id, customerId);
     String customerName =
         customerRepository.findById(customerId).map(Customer::getName).orElse(null);
-    var comment = commentService.addCustomerComment(id, request.content(), customerId, customerName);
+    var comment =
+        commentService.addCustomerComment(id, request.content(), customerId, customerName);
     return ResponseEntity.created(URI.create("/api/portal/projects/" + id + "/comments"))
         .body(PortalCommentResponse.from(comment));
   }

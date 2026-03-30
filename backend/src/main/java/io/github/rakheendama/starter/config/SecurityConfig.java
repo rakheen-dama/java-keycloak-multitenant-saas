@@ -65,10 +65,7 @@ public class SecurityConfig {
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(
             auth ->
-                auth.requestMatchers("/api/portal/auth/**")
-                    .permitAll()
-                    .anyRequest()
-                    .permitAll())
+                auth.requestMatchers("/api/portal/auth/**").permitAll().anyRequest().permitAll())
         .addFilterBefore(portalAuthFilter(), AnonymousAuthenticationFilter.class);
 
     return http.build();

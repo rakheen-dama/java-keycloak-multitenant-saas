@@ -273,9 +273,7 @@ class MagicLinkIntegrationTest {
     // It should return 404 (no mapping) instead of 401 (auth failure)
     var result =
         mockMvc
-            .perform(
-                get("/api/portal/projects")
-                    .header("Authorization", "Bearer " + portalJwt))
+            .perform(get("/api/portal/projects").header("Authorization", "Bearer " + portalJwt))
             .andReturn();
 
     // The filter should pass — the response should NOT be 401

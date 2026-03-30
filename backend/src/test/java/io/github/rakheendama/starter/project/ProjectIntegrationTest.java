@@ -1,7 +1,6 @@
 package io.github.rakheendama.starter.project;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -152,10 +151,8 @@ class ProjectIntegrationTest {
         .where(RequestScopes.ORG_ID, orgSlug)
         .run(
             () -> {
-              projectRepository.save(
-                  new Project("Project A", "Desc A", customerId, ownerMemberId));
-              projectRepository.save(
-                  new Project("Project B", "Desc B", customerId, ownerMemberId));
+              projectRepository.save(new Project("Project A", "Desc A", customerId, ownerMemberId));
+              projectRepository.save(new Project("Project B", "Desc B", customerId, ownerMemberId));
             });
 
     mockMvc
@@ -229,7 +226,8 @@ class ProjectIntegrationTest {
         .perform(
             patch("/api/projects/{id}/status", projectId[0])
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("""
+                .content(
+                    """
                     { "status": "COMPLETED" }
                     """)
                 .with(ownerJwt()))
@@ -241,7 +239,8 @@ class ProjectIntegrationTest {
         .perform(
             patch("/api/projects/{id}/status", projectId[0])
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("""
+                .content(
+                    """
                     { "status": "ARCHIVED" }
                     """)
                 .with(ownerJwt()))

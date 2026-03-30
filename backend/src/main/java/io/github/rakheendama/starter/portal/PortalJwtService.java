@@ -25,7 +25,8 @@ public class PortalJwtService {
   private final byte[] secret;
 
   public PortalJwtService(
-      @Value("${portal.jwt.secret:change-me-in-production-secret-key-32chars}") String portalJwtSecret) {
+      @Value("${portal.jwt.secret:change-me-in-production-secret-key-32chars}")
+          String portalJwtSecret) {
     this.secret = portalJwtSecret.getBytes(StandardCharsets.UTF_8);
   }
 

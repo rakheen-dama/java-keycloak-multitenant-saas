@@ -102,7 +102,6 @@
       "secret": "starter-gateway-secret",
       "protocol": "openid-connect",
       "fullScopeAllowed": false,
-      "serviceAccountClientScopes": [],
       "defaultClientScopes": [],
       "optionalClientScopes": []
     },

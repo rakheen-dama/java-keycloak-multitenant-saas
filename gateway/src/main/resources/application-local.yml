@@ -4,3 +4,22 @@ server:
     session:
       cookie:
         secure: false
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/app
+    username: postgres
+    password: changeme
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8180/realms/starter
+          jwk-set-uri: http://localhost:8180/realms/starter/protocol/openid-connect/certs

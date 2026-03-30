@@ -17,8 +17,7 @@ public class MemberSyncService {
   private final KeycloakProvisioningClient keycloakProvisioningClient;
 
   public MemberSyncService(
-      MemberRepository memberRepository,
-      KeycloakProvisioningClient keycloakProvisioningClient) {
+      MemberRepository memberRepository, KeycloakProvisioningClient keycloakProvisioningClient) {
     this.memberRepository = memberRepository;
     this.keycloakProvisioningClient = keycloakProvisioningClient;
   }

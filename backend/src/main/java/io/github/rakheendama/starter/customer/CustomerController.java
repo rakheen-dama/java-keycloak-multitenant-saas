@@ -33,9 +33,7 @@ public class CustomerController {
   public ResponseEntity<List<CustomerResponse>> listCustomers(
       @RequestParam(required = false) String status) {
     var customers =
-        status != null
-            ? customerService.listByStatus(status)
-            : customerService.listCustomers();
+        status != null ? customerService.listByStatus(status) : customerService.listCustomers();
     return ResponseEntity.ok(customers.stream().map(CustomerResponse::from).toList());
   }
 

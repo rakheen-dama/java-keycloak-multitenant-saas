@@ -58,7 +58,12 @@ class AccessRequestServiceTest {
   static class AccessRequestServiceTestable extends AccessRequestService {
     AccessRequestServiceTestable(
         AccessRequestRepository accessRequestRepository, OtpService otpService) {
-      super(accessRequestRepository, otpService, Optional.empty(), 10, 5,
+      super(
+          accessRequestRepository,
+          otpService,
+          Optional.empty(),
+          10,
+          5,
           "noreply@starter.example.com");
     }
   }

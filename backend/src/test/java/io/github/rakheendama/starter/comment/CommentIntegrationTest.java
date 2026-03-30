@@ -100,8 +100,7 @@ class CommentIntegrationTest {
               customer = customerRepository.save(customer);
               customerId = customer.getId();
 
-              var project =
-                  new Project("Test Project", "For comments", customerId, ownerMemberId);
+              var project = new Project("Test Project", "For comments", customerId, ownerMemberId);
               project = projectRepository.save(project);
               projectId = project.getId();
             });
@@ -113,7 +112,8 @@ class CommentIntegrationTest {
         .perform(
             post("/api/projects/{projectId}/comments", projectId)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("""
+                .content(
+                    """
                     { "content": "This is a test comment" }
                     """)
                 .with(ownerJwt()))
@@ -203,7 +203,8 @@ class CommentIntegrationTest {
         .perform(
             post("/api/projects/{projectId}/comments", projectId)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("""
+                .content(
+                    """
                     { "content": "Check author name" }
                     """)
                 .with(ownerJwt()))
@@ -286,8 +287,7 @@ class CommentIntegrationTest {
 
     // Listing comments for deleted project should return 404 (project not found)
     mockMvc
-        .perform(
-            get("/api/projects/{projectId}/comments", cascadeProjectId[0]).with(ownerJwt()))
+        .perform(get("/api/projects/{projectId}/comments", cascadeProjectId[0]).with(ownerJwt()))
         .andExpect(status().isNotFound());
   }
 

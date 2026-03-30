@@ -56,8 +56,7 @@ public class ProjectController {
   public ResponseEntity<ProjectResponse> createProject(
       @Valid @RequestBody CreateProjectRequest request) {
     var project =
-        projectService.createProject(
-            request.title(), request.description(), request.customerId());
+        projectService.createProject(request.title(), request.description(), request.customerId());
     return ResponseEntity.created(URI.create("/api/projects/" + project.getId()))
         .body(ProjectResponse.from(project));
   }

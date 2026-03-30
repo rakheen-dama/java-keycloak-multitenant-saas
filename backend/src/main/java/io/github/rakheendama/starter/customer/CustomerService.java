@@ -28,9 +28,7 @@ public class CustomerService {
 
   @Transactional(readOnly = true)
   public Customer getCustomer(UUID id) {
-    return repository
-        .findById(id)
-        .orElseThrow(() -> new ResourceNotFoundException("Customer", id));
+    return repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Customer", id));
   }
 
   @Transactional
@@ -45,9 +43,7 @@ public class CustomerService {
   public Customer updateCustomer(UUID id, String name, String email, String company) {
     RequestScopes.requireOwner();
     var customer =
-        repository
-            .findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Customer", id));
+        repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Customer", id));
     customer.updateDetails(name, email, company);
     return repository.save(customer);
   }
@@ -56,9 +52,7 @@ public class CustomerService {
   public Customer archiveCustomer(UUID id) {
     RequestScopes.requireOwner();
     var customer =
-        repository
-            .findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Customer", id));
+        repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Customer", id));
     customer.archive();
     return repository.save(customer);
   }

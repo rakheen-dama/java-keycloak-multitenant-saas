@@ -211,7 +211,8 @@ class MemberIntegrationTest {
         .perform(
             post("/api/members/invite")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("""
+                .content(
+                    """
                     { "email": "newuser@test.com" }
                     """)
                 .with(
@@ -233,7 +234,8 @@ class MemberIntegrationTest {
         .perform(
             post("/api/members/invite")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("""
+                .content(
+                    """
                     { "email": "newuser@test.com" }
                     """)
                 .with(
@@ -253,7 +255,8 @@ class MemberIntegrationTest {
         .perform(
             patch("/api/members/{id}/role", regularMemberId)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("""
+                .content(
+                    """
                     { "role": "owner" }
                     """)
                 .with(
@@ -274,7 +277,8 @@ class MemberIntegrationTest {
         .perform(
             patch("/api/members/{id}/role", ownerMemberId)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("""
+                .content(
+                    """
                     { "role": "member" }
                     """)
                 .with(

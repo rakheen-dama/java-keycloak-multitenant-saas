@@ -7,9 +7,9 @@ import io.github.rakheendama.starter.provisioning.TenantProvisioningService;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-import org.springframework.lang.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -63,9 +63,7 @@ public class AccessRequestApprovalService {
             });
       } else {
         log.info(
-            "Keycloak org {} already exists for request {}, skipping creation",
-            kcOrgId,
-            requestId);
+            "Keycloak org {} already exists for request {}, skipping creation", kcOrgId, requestId);
       }
 
       // Step 3: Provision tenant schema (NO outer transaction)

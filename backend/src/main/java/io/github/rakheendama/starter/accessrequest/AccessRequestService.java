@@ -59,8 +59,8 @@ public class AccessRequestService {
     String otpHash = otpService.hashOtp(otp);
 
     var accessRequest =
-        new AccessRequest(email, dto.fullName(), dto.organizationName(), dto.country(),
-            dto.industry());
+        new AccessRequest(
+            email, dto.fullName(), dto.organizationName(), dto.country(), dto.industry());
     accessRequest.setOtpHash(otpHash);
     accessRequest.setOtpExpiresAt(otpService.otpExpiresAt(otpExpiryMinutes));
 
@@ -106,8 +106,7 @@ public class AccessRequestService {
     return new VerifyOtpResponse("Email verified. Your request is pending review.");
   }
 
-  private void sendOtpEmail(
-      String recipientEmail, String otp, String fullName, int expiryMinutes) {
+  private void sendOtpEmail(String recipientEmail, String otp, String fullName, int expiryMinutes) {
     if (mailSender.isEmpty()) {
       log.info("No mail sender configured — OTP email not sent for {}", recipientEmail);
       return;

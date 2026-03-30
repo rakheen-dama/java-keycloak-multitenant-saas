@@ -27,8 +27,7 @@ public class AccessRequestController {
   }
 
   @PostMapping("/verify")
-  public ResponseEntity<VerifyOtpResponse> verifyOtp(
-      @Valid @RequestBody VerifyOtpRequest request) {
+  public ResponseEntity<VerifyOtpResponse> verifyOtp(@Valid @RequestBody VerifyOtpRequest request) {
     return ResponseEntity.ok(accessRequestService.verifyOtp(request.email(), request.otp()));
   }
 

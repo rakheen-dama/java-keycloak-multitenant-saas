@@ -5,14 +5,36 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>io.github.rakheendama</groupId>
-        <artifactId>java-keycloak-multitenant-saas</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>4.0.4</version>
+        <relativePath/>
     </parent>
 
+    <groupId>io.github.rakheendama</groupId>
     <artifactId>starter-gateway</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
     <name>gateway</name>
     <description>Multitenant SaaS starter — Spring Cloud Gateway BFF</description>
+
+    <properties>
+        <java.version>25</java.version>
+        <spring-cloud.version>2025.1.1</spring-cloud.version>
+        <spotless.version>3.2.1</spotless.version>
+        <google-java-format.version>1.28.0</google-java-format.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
         <!-- Gateway -->
@@ -87,11 +109,11 @@
             <plugin>
                 <groupId>com.diffplug.spotless</groupId>
                 <artifactId>spotless-maven-plugin</artifactId>
-                <version>3.2.1</version>
+                <version>${spotless.version}</version>
                 <configuration>
                     <java>
                         <googleJavaFormat>
-                            <version>1.28.0</version>
+                            <version>${google-java-format.version}</version>
                             <style>GOOGLE</style>
                         </googleJavaFormat>
                         <removeUnusedImports/>
@@ -118,4 +140,5 @@
             </plugin>
         </plugins>
     </build>
+
 </project>

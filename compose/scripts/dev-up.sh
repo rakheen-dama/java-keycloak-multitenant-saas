@@ -80,6 +80,34 @@ if [[ $ELAPSED -ge 15 ]]; then
   echo "TIMEOUT (15s)"
 fi
 
+# Disable HTTPS requirement on all realms (allows admin console + login over HTTP in dev).
+# Uses direct SQL — more reliable than kcadm.sh which can fail if Keycloak is still initializing.
+printf "  Keycloak SSL fix (all realms)... "
+ROWS_UPDATED=$(docker exec starter-postgres psql -U "${POSTGRES_USER:-postgres}" -d keycloak -t -A \
+  -c "UPDATE realm SET ssl_required = 'NONE' WHERE ssl_required <> 'NONE' RETURNING name;" \
+  2>/dev/null || true)
+if [[ -n "$ROWS_UPDATED" ]]; then
+  echo "updated — restarting Keycloak to apply..."
+  docker restart starter-keycloak > /dev/null 2>&1
+  # Wait for Keycloak to come back
+  ELAPSED=0
+  printf "  Keycloak (post-restart)... "
+  while [[ $ELAPSED -lt 120 ]]; do
+    if curl -sf http://localhost:8180/realms/starter > /dev/null 2>&1; then
+      echo "ready"
+      break
+    fi
+    sleep $INTERVAL
+    ELAPSED=$((ELAPSED + INTERVAL))
+  done
+  if [[ $ELAPSED -ge 120 ]]; then
+    echo "TIMEOUT (120s)"
+    exit 1
+  fi
+else
+  echo "already disabled"
+fi
+
 echo ""
 echo "[3/3] Running Keycloak bootstrap..."
 bash "$SCRIPT_DIR/keycloak-bootstrap.sh"

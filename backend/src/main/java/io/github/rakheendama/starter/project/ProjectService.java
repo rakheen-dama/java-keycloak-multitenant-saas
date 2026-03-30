@@ -41,9 +41,7 @@ public class ProjectService {
 
   @Transactional(readOnly = true)
   public Project getProject(UUID id) {
-    return repository
-        .findById(id)
-        .orElseThrow(() -> new ResourceNotFoundException("Project", id));
+    return repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Project", id));
   }
 
   @Transactional
@@ -61,9 +59,7 @@ public class ProjectService {
   public Project updateProject(UUID id, String title, String description) {
     RequestScopes.requireOwner();
     var project =
-        repository
-            .findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Project", id));
+        repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Project", id));
     project.updateDetails(title, description);
     return repository.save(project);
   }
@@ -72,9 +68,7 @@ public class ProjectService {
   public Project changeProjectStatus(UUID id, String newStatus) {
     RequestScopes.requireOwner();
     var project =
-        repository
-            .findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Project", id));
+        repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Project", id));
     project.changeStatus(newStatus);
     return repository.save(project);
   }

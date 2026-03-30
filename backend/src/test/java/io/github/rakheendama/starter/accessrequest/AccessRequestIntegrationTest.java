@@ -63,13 +63,11 @@ class AccessRequestIntegrationTest {
                     """))
         .andExpect(status().isOk())
         .andExpect(
-            jsonPath("$.message")
-                .value("If the email is valid, a verification code will be sent."))
+            jsonPath("$.message").value("If the email is valid, a verification code will be sent."))
         .andExpect(jsonPath("$.expiresInMinutes").value(10));
 
     var entity =
-        accessRequestRepository
-            .findByEmailAndStatus("jane@acme-corp.com", "PENDING_VERIFICATION");
+        accessRequestRepository.findByEmailAndStatus("jane@acme-corp.com", "PENDING_VERIFICATION");
     assertThat(entity).isPresent();
     assertThat(entity.get().getOtpHash()).startsWith("$2");
     assertThat(entity.get().getStatus()).isEqualTo("PENDING_VERIFICATION");
@@ -146,8 +144,7 @@ class AccessRequestIntegrationTest {
                     }
                     """))
         .andExpect(status().isOk())
-        .andExpect(
-            jsonPath("$.message").value("Email verified. Your request is pending review."));
+        .andExpect(jsonPath("$.message").value("Email verified. Your request is pending review."));
 
     var updated = accessRequestRepository.findById(entity.getId()).orElseThrow();
     assertThat(updated.getStatus()).isEqualTo("PENDING");
@@ -201,8 +198,7 @@ class AccessRequestIntegrationTest {
   @Test
   void verifyOtp_tooManyAttempts_returns400() throws Exception {
     var entity =
-        new AccessRequest(
-            "maxed@corp.com", "Test User", "Test Corp", "South Africa", "Accounting");
+        new AccessRequest("maxed@corp.com", "Test User", "Test Corp", "South Africa", "Accounting");
     entity.setOtpHash(passwordEncoder.encode(KNOWN_OTP));
     entity.setOtpExpiresAt(Instant.now().plus(10, ChronoUnit.MINUTES));
     entity.setOtpAttempts(5);

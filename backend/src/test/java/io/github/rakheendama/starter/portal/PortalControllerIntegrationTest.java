@@ -78,13 +78,11 @@ class PortalControllerIntegrationTest {
               customerRepository.deleteAll();
               memberRepository.deleteAll();
 
-              var customerA =
-                  new Customer("Customer A", "a@test.com", "Company A", null);
+              var customerA = new Customer("Customer A", "a@test.com", "Company A", null);
               customerA = customerRepository.save(customerA);
               customerAId = customerA.getId();
 
-              var customerB =
-                  new Customer("Customer B", "b@test.com", "Company B", null);
+              var customerB = new Customer("Customer B", "b@test.com", "Company B", null);
               customerB = customerRepository.save(customerB);
               customerBId = customerB.getId();
 
@@ -104,8 +102,7 @@ class PortalControllerIntegrationTest {
   @Test
   void listProjects_returnsOnlyCustomerAProjects() throws Exception {
     mockMvc
-        .perform(
-            get("/api/portal/projects").header("Authorization", "Bearer " + customerAJwt))
+        .perform(get("/api/portal/projects").header("Authorization", "Bearer " + customerAJwt))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(1))
         .andExpect(jsonPath("$[0].id").value(projectAId.toString()))
@@ -115,8 +112,7 @@ class PortalControllerIntegrationTest {
   @Test
   void listProjects_customerBSeesEmpty() throws Exception {
     mockMvc
-        .perform(
-            get("/api/portal/projects").header("Authorization", "Bearer " + customerBJwt))
+        .perform(get("/api/portal/projects").header("Authorization", "Bearer " + customerBJwt))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(0));
   }
@@ -159,7 +155,8 @@ class PortalControllerIntegrationTest {
             post("/api/portal/projects/{id}/comments", projectAId)
                 .header("Authorization", "Bearer " + customerAJwt)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("""
+                .content(
+                    """
                     { "content": "Hello from the customer portal" }
                     """))
         .andExpect(status().isCreated())
@@ -186,7 +183,8 @@ class PortalControllerIntegrationTest {
             post("/api/portal/projects/{id}/comments", projectAId)
                 .header("Authorization", "Bearer " + customerAJwt)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("""
+                .content(
+                    """
                     { "content": "Customer comment" }
                     """))
         .andExpect(status().isCreated());
@@ -211,8 +209,7 @@ class PortalControllerIntegrationTest {
         .where(RequestScopes.ORG_ID, orgSlug)
         .run(
             () -> {
-              var projectB =
-                  new Project("Project Beta", "B's project", customerBId, null);
+              var projectB = new Project("Project Beta", "B's project", customerBId, null);
               projectB = projectRepository.save(projectB);
               holder[0] = projectB.getId();
             });

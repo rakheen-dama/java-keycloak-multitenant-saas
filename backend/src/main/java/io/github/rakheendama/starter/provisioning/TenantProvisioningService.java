@@ -36,8 +36,7 @@ public class TenantProvisioningService {
     this.txTemplate = txTemplate;
   }
 
-  public ProvisioningResult provisionTenant(
-      String orgSlug, String orgName, String keycloakOrgId) {
+  public ProvisioningResult provisionTenant(String orgSlug, String orgName, String keycloakOrgId) {
     // Step 1: Idempotency check — if mapping exists, tenant is fully provisioned
     var existingMapping = mappingRepository.findByOrgId(orgSlug);
     if (existingMapping.isPresent()) {
@@ -56,8 +55,7 @@ public class TenantProvisioningService {
     try {
       // Step 4: Create schema
       log.info("Creating schema '{}'", schemaName);
-      new JdbcTemplate(dataSource)
-          .execute("CREATE SCHEMA IF NOT EXISTS \"" + schemaName + "\"");
+      new JdbcTemplate(dataSource).execute("CREATE SCHEMA IF NOT EXISTS \"" + schemaName + "\"");
 
       // Step 5: Run Flyway tenant migrations
       log.info("Running tenant migrations for schema '{}'", schemaName);
@@ -106,8 +104,7 @@ public class TenantProvisioningService {
                               .findByKeycloakOrgId(keycloakOrgId)
                               .orElseGet(
                                   () -> {
-                                    var newOrg =
-                                        new Organization(keycloakOrgId, orgName, orgSlug);
+                                    var newOrg = new Organization(keycloakOrgId, orgName, orgSlug);
                                     return organizationRepository.save(newOrg);
                                   })));
     } catch (Exception e) {
