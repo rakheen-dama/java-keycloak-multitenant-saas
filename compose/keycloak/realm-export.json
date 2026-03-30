@@ -13,6 +13,8 @@
   "bruteForceProtected": true,
   "sslRequired": "none",
   "organizationsEnabled": true,
+  "loginTheme": "starter",
+  "emailTheme": "starter",
   "roles": {
     "realm": [
       {

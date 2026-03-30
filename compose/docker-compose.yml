@@ -41,6 +41,7 @@ services:
       KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET:-starter-gateway-secret}
     volumes:
       - ./keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
+      - ./keycloak/themes/starter:/opt/keycloak/themes/starter:ro
     ports:
       - "8180:8180"
     depends_on:
