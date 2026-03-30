@@ -122,6 +122,7 @@ Example: `orgSlug = "acme-corp"` → `tenant_a3f2b1c4d5e6`
 | T5B | Backend: Comment entity + member-authored CRUD | #15 | Done |
 | T5C | Frontend: Dashboard + Projects pages | #16 | Done |
 | T5D | Frontend: Customers pages | #17 | Done |
+| T6A | Backend: Magic link + portal JWT + auth filter | #18 | Done |
 
 ## Anti-Patterns (Do NOT)
 
