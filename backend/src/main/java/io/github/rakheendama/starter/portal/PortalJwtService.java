@@ -68,8 +68,12 @@ public class PortalJwtService {
       if (!"customer".equals(type)) {
         throw new PortalAuthException("Invalid token type for portal access");
       }
-      UUID customerId = UUID.fromString(claims.getSubject());
+      String subject = claims.getSubject();
       String orgId = claims.getStringClaim("org_id");
+      if (subject == null || orgId == null) {
+        throw new PortalAuthException("Missing required JWT claims");
+      }
+      UUID customerId = UUID.fromString(subject);
       return new PortalClaims(customerId, orgId);
     } catch (ParseException | JOSEException e) {
       throw new PortalAuthException("Invalid portal token: " + e.getMessage());

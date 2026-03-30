@@ -60,25 +60,30 @@ public class PortalAuthController {
       return ResponseEntity.ok(new MessageResponse(GENERIC_MESSAGE));
     }
 
+    // Resolve customer inside tenant scope, capture result
+    final UUID[] resolvedId = {null};
     try {
       ScopedValue.where(RequestScopes.TENANT_ID, schema)
           .run(
               () -> {
-                var customerOpt = customerRepository.findByEmail(body.email());
-                if (customerOpt.isEmpty()) {
-                  return;
-                }
-                var customer = customerOpt.get();
-                if (!"ACTIVE".equals(customer.getStatus())) {
-                  return;
-                }
-                magicLinkService.generateToken(
-                    customer.getId(), body.orgId(), request.getRemoteAddr());
+                customerRepository
+                    .findByEmail(body.email())
+                    .filter(c -> "ACTIVE".equals(c.getStatus()))
+                    .ifPresent(c -> resolvedId[0] = c.getId());
               });
+    } catch (Exception e) {
+      log.warn("Error during customer lookup for org {}", body.orgId(), e);
+    }
+
+    // Call generateToken OUTSIDE the tenant scope — magic_link_tokens is in public schema
+    try {
+      if (resolvedId[0] != null) {
+        magicLinkService.generateToken(resolvedId[0], body.orgId(), request.getRemoteAddr());
+      }
     } catch (TooManyRequestsException e) {
       throw e; // Re-throw for GlobalExceptionHandler to map to 429
     } catch (Exception e) {
-      log.warn("Error during magic link request for org {}", body.orgId(), e);
+      log.warn("Error during magic link generation for org {}", body.orgId(), e);
     }
 
     return ResponseEntity.ok(new MessageResponse(GENERIC_MESSAGE));

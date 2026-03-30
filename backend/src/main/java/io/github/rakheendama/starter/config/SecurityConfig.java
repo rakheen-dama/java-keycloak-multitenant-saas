@@ -1,8 +1,10 @@
 package io.github.rakheendama.starter.config;
 
 import io.github.rakheendama.starter.multitenancy.MemberFilter;
+import io.github.rakheendama.starter.multitenancy.OrgSchemaMappingRepository;
 import io.github.rakheendama.starter.multitenancy.TenantFilter;
 import io.github.rakheendama.starter.portal.PortalAuthFilter;
+import io.github.rakheendama.starter.portal.PortalJwtService;
 import java.util.List;
 import org.springframework.boot.context.properties.bind.Bindable;
 import org.springframework.boot.context.properties.bind.Binder;
@@ -26,18 +28,26 @@ public class SecurityConfig {
 
   private final TenantFilter tenantFilter;
   private final MemberFilter memberFilter;
-  private final PortalAuthFilter portalAuthFilter;
+  private final PortalJwtService portalJwtService;
+  private final OrgSchemaMappingRepository orgSchemaMappingRepository;
   private final Environment environment;
 
   public SecurityConfig(
       TenantFilter tenantFilter,
       MemberFilter memberFilter,
-      PortalAuthFilter portalAuthFilter,
+      PortalJwtService portalJwtService,
+      OrgSchemaMappingRepository orgSchemaMappingRepository,
       Environment environment) {
     this.tenantFilter = tenantFilter;
     this.memberFilter = memberFilter;
-    this.portalAuthFilter = portalAuthFilter;
+    this.portalJwtService = portalJwtService;
+    this.orgSchemaMappingRepository = orgSchemaMappingRepository;
     this.environment = environment;
+  }
+
+  @Bean
+  public PortalAuthFilter portalAuthFilter() {
+    return new PortalAuthFilter(portalJwtService, orgSchemaMappingRepository);
   }
 
   /**
@@ -59,7 +69,7 @@ public class SecurityConfig {
                     .permitAll()
                     .anyRequest()
                     .permitAll())
-        .addFilterBefore(portalAuthFilter, AnonymousAuthenticationFilter.class);
+        .addFilterBefore(portalAuthFilter(), AnonymousAuthenticationFilter.class);
 
     return http.build();
   }

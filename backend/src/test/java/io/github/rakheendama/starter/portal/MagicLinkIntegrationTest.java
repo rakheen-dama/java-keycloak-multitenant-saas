@@ -125,9 +125,19 @@ class MagicLinkIntegrationTest {
 
   @Test
   void requestLink_rateLimitExceeded_returns429() throws Exception {
-    // Generate 3 tokens directly via service (within scoped value for customer lookup)
+    // Generate 3 tokens through the full controller path
+    String requestBody =
+        """
+        { "email": "%s", "orgId": "%s" }
+        """
+            .formatted(CUSTOMER_EMAIL, orgSlug);
     for (int i = 0; i < 3; i++) {
-      magicLinkService.generateToken(customerId, orgSlug, "127.0.0.1");
+      mockMvc
+          .perform(
+              post("/api/portal/auth/request-link")
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(requestBody))
+          .andExpect(status().isOk());
     }
 
     // 4th request should hit rate limit
@@ -135,11 +145,7 @@ class MagicLinkIntegrationTest {
         .perform(
             post("/api/portal/auth/request-link")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    { "email": "%s", "orgId": "%s" }
-                    """
-                        .formatted(CUSTOMER_EMAIL, orgSlug)))
+                .content(requestBody))
         .andExpect(status().isTooManyRequests());
   }
 
