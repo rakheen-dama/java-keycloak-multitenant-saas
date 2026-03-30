@@ -56,10 +56,11 @@
         "http://localhost:8443/login/oauth2/code/keycloak"
       ],
       "attributes": {
-        "post.logout.redirect.uris": "http://localhost:8443"
+        "post.logout.redirect.uris": "http://localhost:8443##http://localhost:3000"
       },
       "webOrigins": [
-        "http://localhost:8443"
+        "http://localhost:8443",
+        "http://localhost:3000"
       ],
       "protocol": "openid-connect",
       "fullScopeAllowed": true,
