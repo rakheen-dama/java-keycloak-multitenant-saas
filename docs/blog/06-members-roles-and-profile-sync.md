@@ -221,8 +221,9 @@ Authorization is enforced by `RequestScopes.requireOwner()` at the service layer
 
 ```java
 public static void requireOwner() {
-  if (!"owner".equals(ORG_ROLE.get())) {
-    throw new ForbiddenException("Owner role required", "This action requires owner privileges");
+  if (!"owner".equals(getOrgRole())) {
+    throw new ForbiddenException(
+        "Owner required", "Only the organization owner can perform this action");
   }
 }
 ```

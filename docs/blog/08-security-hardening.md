@@ -28,7 +28,7 @@ validation in `SchemaMultiTenantConnectionProvider`.
 ```java
 private static final Pattern SCHEMA_PATTERN = Pattern.compile("^tenant_[0-9a-f]{12}$");
 
-private void sanitizeSchema(String schema) {
+private String sanitizeSchema(String schema) {
   if ("public".equals(schema) || SCHEMA_PATTERN.matcher(schema).matches()) {
     return schema;
   }
