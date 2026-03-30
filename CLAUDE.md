@@ -126,6 +126,7 @@ Example: `orgSlug = "acme-corp"` → `tenant_a3f2b1c4d5e6`
 | T6B | Backend: Portal endpoints + customer comments | #19 | Done |
 | T6C | Frontend: Portal pages + Share Portal Link | #20 | Done |
 | T7A | Blog posts 01-05 (Foundation through Registration) | #21 | Done |
+| T7B | Blog posts 06-10 (Members through Portal Comments) | #22 | Done |
 
 ## Anti-Patterns (Do NOT)
 
