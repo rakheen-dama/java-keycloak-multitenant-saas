@@ -39,6 +39,10 @@ starter:
   email:
     sender-address: noreply@starter.example.com
 
+portal:
+  jwt:
+    secret: ${PORTAL_JWT_SECRET:change-me-in-production-secret-key-32chars}
+
 management:
   endpoints:
     web:

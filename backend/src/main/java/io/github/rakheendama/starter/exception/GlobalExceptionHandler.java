@@ -1,5 +1,7 @@
 package io.github.rakheendama.starter.exception;
 
+import io.github.rakheendama.starter.portal.PortalAuthException;
+import io.github.rakheendama.starter.portal.TooManyRequestsException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,5 +48,25 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     problem.setTitle("Access denied");
     problem.setDetail("Insufficient permissions for this operation");
     return ResponseEntity.status(HttpStatus.FORBIDDEN).body(problem);
+  }
+
+  @ExceptionHandler(PortalAuthException.class)
+  public ResponseEntity<ProblemDetail> handlePortalAuth(
+      PortalAuthException ex, HttpServletRequest request) {
+    log.warn("Portal auth failed: path={}, detail={}", request.getRequestURI(), ex.getMessage());
+    var problem = ProblemDetail.forStatus(HttpStatus.UNAUTHORIZED);
+    problem.setTitle("Portal authentication failed");
+    problem.setDetail(ex.getMessage());
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(problem);
+  }
+
+  @ExceptionHandler(TooManyRequestsException.class)
+  public ResponseEntity<ProblemDetail> handleTooManyRequests(
+      TooManyRequestsException ex, HttpServletRequest request) {
+    log.warn("Rate limit exceeded: path={}, detail={}", request.getRequestURI(), ex.getMessage());
+    var problem = ProblemDetail.forStatus(HttpStatus.TOO_MANY_REQUESTS);
+    problem.setTitle("Too many requests");
+    problem.setDetail(ex.getMessage());
+    return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(problem);
   }
 }
