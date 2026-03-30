@@ -19,6 +19,7 @@ export default async function ExchangePage({
     return <ErrorPage message="Invalid link - missing token or organization." />;
   }
 
+  let data: ExchangeResponse;
   try {
     const res = await fetch(`${BACKEND_URL}/api/portal/auth/exchange`, {
       method: "POST",
@@ -34,17 +35,17 @@ export default async function ExchangePage({
       return <ErrorPage message={message} />;
     }
 
-    const data: ExchangeResponse = await res.json();
-
-    // Redirect to a client page that stores the token and navigates
-    const params = new URLSearchParams({
-      t: data.token,
-      n: data.customerName,
-    });
-    redirect(`/auth/callback?${params.toString()}`);
+    data = await res.json();
   } catch {
     return <ErrorPage message="Unable to reach the server. Please try again." />;
   }
+
+  // redirect() must be outside try/catch — it throws a special Next.js error
+  const params = new URLSearchParams({
+    t: data.token,
+    n: data.customerName,
+  });
+  redirect(`/auth/callback?${params.toString()}`);
 }
 
 function ErrorPage({ message }: { message: string }) {
