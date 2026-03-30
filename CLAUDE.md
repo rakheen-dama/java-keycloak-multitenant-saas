@@ -116,6 +116,8 @@ Example: `orgSlug = "acme-corp"` → `tenant_a3f2b1c4d5e6`
 | T3B | Platform admin + provisioning pipeline | #9 | Done |
 | T3C | Frontend: Request Access wizard | #10 | Done |
 | T3D | Frontend: Platform Admin queue | #11 | Done |
+| T4A | Backend: Member sync + CRUD + tests | #12 | Done |
+| T4B | Frontend: Members page + invite dialog | #13 | Done |
 
 ## Anti-Patterns (Do NOT)
 
