@@ -12,7 +12,7 @@ const nextConfig: NextConfig = {
       },
       {
         source: "/portal/:path*",
-        destination: `${backendUrl}/portal/:path*`,
+        destination: `${backendUrl}/api/portal/:path*`,
       },
     ];
   },
