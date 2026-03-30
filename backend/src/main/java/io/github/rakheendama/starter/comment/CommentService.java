@@ -1,5 +1,6 @@
 package io.github.rakheendama.starter.comment;
 
+import io.github.rakheendama.starter.customer.CustomerRepository;
 import io.github.rakheendama.starter.exception.ForbiddenException;
 import io.github.rakheendama.starter.exception.ResourceNotFoundException;
 import io.github.rakheendama.starter.member.Member;
@@ -17,14 +18,17 @@ public class CommentService {
   private final CommentRepository commentRepository;
   private final ProjectRepository projectRepository;
   private final MemberRepository memberRepository;
+  private final CustomerRepository customerRepository;
 
   public CommentService(
       CommentRepository commentRepository,
       ProjectRepository projectRepository,
-      MemberRepository memberRepository) {
+      MemberRepository memberRepository,
+      CustomerRepository customerRepository) {
     this.commentRepository = commentRepository;
     this.projectRepository = projectRepository;
     this.memberRepository = memberRepository;
+    this.customerRepository = customerRepository;
   }
 
   @Transactional(readOnly = true)
@@ -44,6 +48,16 @@ public class CommentService {
     String memberName =
         memberRepository.findById(memberId).map(Member::getDisplayName).orElse(null);
     var comment = new Comment(projectId, content, memberId, memberName);
+    return commentRepository.save(comment);
+  }
+
+  @Transactional
+  public Comment addCustomerComment(
+      UUID projectId, String content, UUID customerId, String customerName) {
+    projectRepository
+        .findById(projectId)
+        .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
+    var comment = new Comment(projectId, content, customerId, customerName, "CUSTOMER");
     return commentRepository.save(comment);
   }
 
