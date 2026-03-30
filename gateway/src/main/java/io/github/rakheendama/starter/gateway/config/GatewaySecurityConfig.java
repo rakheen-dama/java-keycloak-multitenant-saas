@@ -8,10 +8,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.oidc.web.logout.OidcClientInitiatedLogoutSuccessHandler;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
@@ -55,7 +59,7 @@ public class GatewaySecurityConfig {
                     .authenticated()
                     .anyRequest()
                     .authenticated())
-        .oauth2Login(oauth2 -> oauth2.defaultSuccessUrl(frontendUrl + "/dashboard", true))
+        .oauth2Login(oauth2 -> oauth2.successHandler(roleBasedSuccessHandler()))
         .logout(
             logout ->
                 logout
@@ -96,6 +100,29 @@ public class GatewaySecurityConfig {
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/**", config);
     return source;
+  }
+
+  private AuthenticationSuccessHandler roleBasedSuccessHandler() {
+    var defaultHandler = new SimpleUrlAuthenticationSuccessHandler(frontendUrl + "/dashboard");
+    defaultHandler.setAlwaysUseDefaultTargetUrl(true);
+
+    return (request, response, authentication) -> {
+      if (isPlatformAdmin(authentication)) {
+        response.sendRedirect(frontendUrl + "/platform-admin/access-requests");
+        return;
+      }
+      defaultHandler.onAuthenticationSuccess(request, response, authentication);
+    };
+  }
+
+  private static boolean isPlatformAdmin(Authentication authentication) {
+    if (authentication.getPrincipal() instanceof OidcUser oidcUser) {
+      Object groups = oidcUser.getClaim("groups");
+      if (groups instanceof List<?> list) {
+        return list.contains("platform-admins");
+      }
+    }
+    return false;
   }
 
   private LogoutSuccessHandler oidcLogoutSuccessHandler() {

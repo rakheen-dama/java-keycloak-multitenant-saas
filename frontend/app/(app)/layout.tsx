@@ -45,6 +45,9 @@ export default async function AppLayout({
     redirect("/oauth2/authorization/keycloak");
   }
 
+  // Platform admins without an org should never reach the app dashboard.
+  // The gateway routes them to /platform-admin/access-requests on login,
+  // but this is a safety net in case they navigate here directly.
   if (session.isPlatformAdmin && !session.orgId) {
     redirect("/platform-admin/access-requests");
   }
@@ -52,18 +55,20 @@ export default async function AppLayout({
   // Preflight: trigger member sync before rendering any child page.
   // On first login, MemberFilter.syncOrCreate() needs one completed request
   // to commit the member row. Without this, parallel dashboard calls race.
-  try {
-    await fetch(`${GATEWAY_URL}/api/members/me`, {
-      headers: {
-        Accept: "application/json",
-        ...(sessionCookie
-          ? { Cookie: `SESSION=${sessionCookie.value}` }
-          : {}),
-      },
-      cache: "no-store",
-    });
-  } catch {
-    // Best-effort — dashboard will retry if this fails
+  if (session.orgId) {
+    try {
+      await fetch(`${GATEWAY_URL}/api/members/me`, {
+        headers: {
+          Accept: "application/json",
+          ...(sessionCookie
+            ? { Cookie: `SESSION=${sessionCookie.value}` }
+            : {}),
+        },
+        cache: "no-store",
+      });
+    } catch {
+      // Best-effort — dashboard will retry if this fails
+    }
   }
 
   const orgSlug = session.orgId ?? "unknown";
