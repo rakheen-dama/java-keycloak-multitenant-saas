@@ -11,7 +11,7 @@ A standalone multitenant SaaS starter template built with Java 25, Spring Boot 4
 | T3 | Access Request + Provisioning | Backend + Frontend | T2 | L | T3A, T3B, T3C, T3D | **Done** |
 | T4 | Members + Invitations | Backend + Frontend | T3 | M | T4A ✅, T4B ✅ | **Done** |
 | T5 | Domain CRUD (Customer, Project, Comment) | Backend + Frontend | T4 | L | T5A ✅, T5B ✅, T5C ✅, T5D ✅ | **Done** |
-| T6 | Portal + Magic Links | Backend + Frontend | T5 | L | T6A ✅, T6B ✅, T6C | T6A, T6B Done |
+| T6 | Portal + Magic Links | Backend + Frontend | T5 | L | T6A ✅, T6B ✅, T6C ✅ | **Done** |
 | T7 | Blog Series Drafts | Docs | T1-T6 | M | T7A, T7B | |
 
 ## Dependency Graph
@@ -433,7 +433,7 @@ All epics are strictly sequential. T7 can technically start once T6 is complete,
 |-------|-------|-------------|--------|
 | T6A | Backend: Magic link + portal JWT + auth filter | MagicLinkToken entity + repo, MagicLinkService (generate, hash, verify, consume, rate limit), PortalJwtService (HS256 issue + validate), PortalAuthController (request-link, exchange), PortalAuthFilter, public migration V3 (magic_link_tokens), integration tests | M | ✅ |
 | T6B | Backend: Portal endpoints + customer comments | PortalController (list projects, project detail, add comment), customer comment creation in CommentService, portal endpoint integration tests, cross-customer isolation tests | M |
-| T6C | Frontend: Portal pages + Share Portal Link | Portal login page, portal layout, portal project list, portal project detail with comments, add comment form (customer path), "Share Portal Link" button on tenant app project detail | M |
+| T6C | Frontend: Portal pages + Share Portal Link | Portal login page, portal layout, portal project list, portal project detail with comments, add comment form (customer path), "Share Portal Link" button on tenant app project detail | M | ✅ |
 
 ### Tasks
 
