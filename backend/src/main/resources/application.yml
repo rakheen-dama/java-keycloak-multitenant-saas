@@ -24,9 +24,20 @@ spring:
           issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8180/realms/starter}
           jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:http://localhost:8180/realms/starter/protocol/openid-connect/certs}
 
+  mail:
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:1025}
+
   threads:
     virtual:
       enabled: true
+
+starter:
+  otp:
+    expiry-minutes: 10
+    max-attempts: 5
+  email:
+    sender-address: noreply@starter.example.com
 
 management:
   endpoints:
