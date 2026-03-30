@@ -52,9 +52,37 @@ public class Member {
     this.displayName = displayName;
     this.role = role;
     this.status = "ACTIVE";
+    this.firstLoginAt = Instant.now();
+    this.lastLoginAt = Instant.now();
     this.createdAt = Instant.now();
     this.updatedAt = Instant.now();
   }
+
+  // --- Mutation methods ---
+
+  public void syncProfile(String email, String displayName) {
+    if (email != null) this.email = email;
+    if (displayName != null) this.displayName = displayName;
+    this.lastLoginAt = Instant.now();
+    this.updatedAt = Instant.now();
+  }
+
+  public void changeRole(String newRole) {
+    this.role = newRole;
+    this.updatedAt = Instant.now();
+  }
+
+  public void suspend() {
+    this.status = "SUSPENDED";
+    this.updatedAt = Instant.now();
+  }
+
+  public void activate() {
+    this.status = "ACTIVE";
+    this.updatedAt = Instant.now();
+  }
+
+  // --- Getters ---
 
   public UUID getId() {
     return id;

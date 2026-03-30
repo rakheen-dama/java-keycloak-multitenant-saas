@@ -2,13 +2,13 @@ package io.github.rakheendama.starter.multitenancy;
 
 import io.github.rakheendama.starter.member.Member;
 import io.github.rakheendama.starter.member.MemberRepository;
+import io.github.rakheendama.starter.member.MemberSyncService;
 import io.github.rakheendama.starter.security.JwtUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
@@ -24,16 +24,17 @@ public class MemberFilter extends OncePerRequestFilter {
   private static final Logger log = LoggerFactory.getLogger(MemberFilter.class);
 
   private final MemberRepository memberRepository;
+  private final MemberSyncService memberSyncService;
 
-  public MemberFilter(MemberRepository memberRepository) {
+  public MemberFilter(MemberRepository memberRepository, MemberSyncService memberSyncService) {
     this.memberRepository = memberRepository;
+    this.memberSyncService = memberSyncService;
   }
 
   @Override
   protected void doFilterInternal(
       HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
-    // Only run if TenantFilter already bound the tenant context
     if (!RequestScopes.TENANT_ID.isBound()) {
       filterChain.doFilter(request, response);
       return;
@@ -52,16 +53,21 @@ public class MemberFilter extends OncePerRequestFilter {
       return;
     }
 
-    Optional<Member> memberOpt = memberRepository.findByKeycloakUserId(keycloakUserId);
+    Member member;
+    var memberOpt = memberRepository.findByKeycloakUserId(keycloakUserId);
     if (memberOpt.isEmpty()) {
-      // T2B stub: MemberSyncService (T4) will handle first-login member creation.
-      // Continue unbound — endpoints requiring MEMBER_ID will fail gracefully.
-      log.debug("No member record found for Keycloak user '{}' — skipping binding", keycloakUserId);
-      filterChain.doFilter(request, response);
-      return;
+      String keycloakOrgId = JwtUtils.extractOrgId(jwt);
+      if (keycloakOrgId == null) {
+        filterChain.doFilter(request, response);
+        return;
+      }
+      log.info("First login for Keycloak user '{}' — syncing member", keycloakUserId);
+      member = memberSyncService.syncOrCreate(jwt, keycloakOrgId);
+    } else {
+      // Existing member — use directly, no DB write on every request
+      member = memberOpt.get();
     }
 
-    Member member = memberOpt.get();
     ScopedFilterChain.runScoped(
         ScopedValue.where(RequestScopes.MEMBER_ID, member.getId())
             .where(RequestScopes.ORG_ROLE, member.getRole()),

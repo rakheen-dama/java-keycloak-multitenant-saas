@@ -161,6 +161,32 @@ public class KeycloakProvisioningClient {
     return (String) user.get("id");
   }
 
+  /**
+   * Returns true if the given Keycloak user is the org creator (i.e., the "creatorUserId" attribute
+   * on the org matches the userId).
+   */
+  @SuppressWarnings("unchecked")
+  public boolean isOrgCreator(String orgId, String userId) {
+    try {
+      var org =
+          restClient
+              .get()
+              .uri("/organizations/{orgId}", orgId)
+              .header("Authorization", "Bearer " + getAdminToken())
+              .retrieve()
+              .body(Map.class);
+      if (org == null) return false;
+      var attributes = (Map<String, Object>) org.get("attributes");
+      if (attributes == null) return false;
+      var creatorList = (List<String>) attributes.get("creatorUserId");
+      if (creatorList == null || creatorList.isEmpty()) return false;
+      return userId.equals(creatorList.getFirst());
+    } catch (Exception e) {
+      log.warn("Could not check org creator for org {}: {}", orgId, e.getMessage());
+      return false;
+    }
+  }
+
   @SuppressWarnings("unchecked")
   private synchronized String getAdminToken() {
     if (Instant.now().isBefore(tokenExpiry)) {
