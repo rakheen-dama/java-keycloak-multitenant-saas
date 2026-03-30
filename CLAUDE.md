@@ -118,6 +118,8 @@ Example: `orgSlug = "acme-corp"` → `tenant_a3f2b1c4d5e6`
 | T3D | Frontend: Platform Admin queue | #11 | Done |
 | T4A | Backend: Member sync + CRUD + tests | #12 | Done |
 | T4B | Frontend: Members page + invite dialog | #13 | Done |
+| T5A | Backend: Customer + Project entities + CRUD | #14 | Done |
+| T5B | Backend: Comment entity + member-authored CRUD | #15 | Done |
 
 ## Anti-Patterns (Do NOT)
 
