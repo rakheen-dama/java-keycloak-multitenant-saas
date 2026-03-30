@@ -67,11 +67,10 @@ public class GatewaySecurityConfig {
             csrf ->
                 csrf.csrfTokenRepository(csrfTokenRepository())
                     .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
-                    .ignoringRequestMatchers(
-                        "/bff/csrf",
-                        "/api/access-requests",
-                        "/api/access-requests/verify",
-                        "/api/portal/**"))
+                    // All /api/** requests come server-to-server from Next.js server actions,
+                    // not from browser JS. SESSION cookie + SameSite=Lax + CORS provide
+                    // sufficient CSRF protection for this BFF pattern.
+                    .ignoringRequestMatchers("/bff/**", "/api/**"))
         .exceptionHandling(
             ex ->
                 ex.defaultAuthenticationEntryPointFor(
