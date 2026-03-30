@@ -63,7 +63,7 @@ public class Organization {
     this.updatedAt = Instant.now();
   }
 
-  public void markFailed(String error) {
+  public void markFailed() {
     this.status = "FAILED";
     this.updatedAt = Instant.now();
   }

@@ -53,9 +53,12 @@ public class KeycloakProvisioningClient {
                   String body =
                       new String(response.getBody().readAllBytes(), StandardCharsets.UTF_8);
                   log.error("Keycloak Admin API error: {} — {}", status, body);
-                  if (status.value() == 401
-                      || status.value() == 403
-                      || status.value() >= 500) {
+                  if (status.value() == 401) {
+                    tokenExpiry = Instant.MIN;
+                    throw new ResponseStatusException(
+                        HttpStatus.BAD_GATEWAY, "Keycloak Admin API unavailable");
+                  }
+                  if (status.value() == 403 || status.value() >= 500) {
                     throw new ResponseStatusException(
                         HttpStatus.BAD_GATEWAY, "Keycloak Admin API unavailable");
                   }

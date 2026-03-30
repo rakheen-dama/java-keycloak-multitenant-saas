@@ -140,7 +140,7 @@ public class TenantProvisioningService {
               () ->
                   txTemplate.executeWithoutResult(
                       tx -> {
-                        org.markFailed(errorMessage);
+                        org.markFailed();
                         organizationRepository.save(org);
                       }));
     } catch (Exception e) {

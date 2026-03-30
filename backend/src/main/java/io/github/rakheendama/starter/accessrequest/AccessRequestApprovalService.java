@@ -46,6 +46,7 @@ public class AccessRequestApprovalService {
 
     String orgName = request.getOrganizationName();
     String slug = slugify(orgName);
+    String email = request.getEmail();
 
     try {
       // Step 2: Create KC org if needed, persist kcOrgId immediately
@@ -56,8 +57,9 @@ public class AccessRequestApprovalService {
         final String orgId = kcOrgId;
         txTemplate.executeWithoutResult(
             tx -> {
-              request.setKeycloakOrgId(orgId);
-              accessRequestRepository.save(request);
+              var fresh = accessRequestRepository.findById(requestId).orElseThrow();
+              fresh.setKeycloakOrgId(orgId);
+              accessRequestRepository.save(fresh);
             });
       } else {
         log.info(
@@ -71,29 +73,31 @@ public class AccessRequestApprovalService {
       log.info("Provisioned tenant schema for org {} (slug={})", kcOrgId, slug);
 
       // Step 4: Invite user and set org creator
-      keycloakProvisioningClient.inviteUser(kcOrgId, request.getEmail());
-      keycloakProvisioningClient.setOrgCreator(kcOrgId, request.getEmail());
-      log.info("Sent invitation to {} for org {}", request.getEmail(), kcOrgId);
+      keycloakProvisioningClient.inviteUser(kcOrgId, email);
+      keycloakProvisioningClient.setOrgCreator(kcOrgId, email);
+      log.info("Sent invitation to {} for org {}", email, kcOrgId);
 
-      // Step 5: Mark approved (short transaction)
+      // Step 5: Mark approved (short transaction, re-fetch for current @Version)
       return txTemplate.execute(
           tx -> {
-            request.setStatus("APPROVED");
-            request.setReviewedBy(adminEmail);
-            request.setReviewedAt(Instant.now());
-            request.setProvisioningError(null);
-            return accessRequestRepository.save(request);
+            var fresh = accessRequestRepository.findById(requestId).orElseThrow();
+            fresh.setStatus("APPROVED");
+            fresh.setReviewedBy(adminEmail);
+            fresh.setReviewedAt(Instant.now());
+            fresh.setProvisioningError(null);
+            return accessRequestRepository.save(fresh);
           });
     } catch (Exception e) {
       log.error("Approval failed for request {}: {}", requestId, e.getMessage(), e);
       String rawMsg = e.getMessage();
       String errorMsg =
           (rawMsg != null && rawMsg.length() > 500) ? rawMsg.substring(0, 500) : rawMsg;
-      // Persist error in separate TX so it always commits
+      // Persist error in separate TX so it always commits (re-fetch for current @Version)
       txTemplate.executeWithoutResult(
           tx -> {
-            request.setProvisioningError(errorMsg);
-            accessRequestRepository.save(request);
+            var fresh = accessRequestRepository.findById(requestId).orElseThrow();
+            fresh.setProvisioningError(errorMsg);
+            accessRequestRepository.save(fresh);
           });
       throw e;
     }
