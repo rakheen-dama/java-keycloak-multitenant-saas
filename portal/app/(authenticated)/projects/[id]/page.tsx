@@ -1,206 +1,36 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import Link from "next/link";
-import { ArrowLeft, Loader2, AlertCircle, Calendar, FileText, CheckSquare, User, Clock, DollarSign, Activity, MessageSquare, Send } from "lucide-react";
-import { portalApi, PortalApiError, clearPortalAuth } from "@/lib/portal-api";
-import { PortalDocumentTable } from "@/components/portal/portal-document-table";
+import { ArrowLeft, Loader2, AlertCircle, Send, MessageSquare } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent } from "@/components/ui/card";
-import { formatDate } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import type { PortalProject, PortalDocument, PortalTask, PortalSummary, PortalComment } from "@/lib/types";
-
-function getTaskStatusVariant(status: string): "neutral" | "warning" | "success" | "destructive" {
-  switch (status) {
-    case "IN_PROGRESS":
-      return "warning";
-    case "DONE":
-      return "success";
-    case "CANCELLED":
-      return "destructive";
-    default:
-      return "neutral";
-  }
-}
-
-function formatTaskStatus(status: string): string {
-  return status.replace(/_/g, " ");
-}
-
-function PortalTaskList({ tasks }: { tasks: PortalTask[] }) {
-  if (tasks.length === 0) {
-    return (
-      <Card>
-        <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-          <CheckSquare className="mb-3 size-8 text-slate-300 dark:text-slate-600" />
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            No tasks for this project
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  const sorted = [...tasks].sort((a, b) => a.sortOrder - b.sortOrder);
-
-  return (
-    <Card>
-      <CardContent className="divide-y divide-slate-100 p-0 dark:divide-slate-800">
-        {sorted.map((task) => (
-          <div
-            key={task.id}
-            className="flex items-center justify-between px-4 py-3"
-          >
-            <div className="flex flex-col gap-1">
-              <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                {task.name}
-              </span>
-              <span className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
-                <User className="size-3" />
-                {task.assigneeName ?? "Unassigned"}
-              </span>
-            </div>
-            <Badge variant={getTaskStatusVariant(task.status)}>
-              {formatTaskStatus(task.status)}
-            </Badge>
-          </div>
-        ))}
-      </CardContent>
-    </Card>
-  );
-}
-
-function PortalCommentSection({ projectId }: { projectId: string }) {
-  const [comments, setComments] = useState<PortalComment[]>([]);
-  const [newComment, setNewComment] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  useEffect(() => {
-    portalApi
-      .get<PortalComment[]>(`/portal/projects/${projectId}/comments`)
-      .then(setComments)
-      .catch(() => {})
-      .finally(() => setIsLoading(false));
-  }, [projectId]);
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    const content = newComment.trim();
-    if (!content || isSubmitting) return;
-    setIsSubmitting(true);
-    try {
-      const comment = await portalApi.post<PortalComment>(
-        `/portal/projects/${projectId}/comments`,
-        { content }
-      );
-      setComments((prev) => [...prev, comment]);
-      setNewComment("");
-    } catch {
-      // silently fail — user can retry
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
-
-  if (isLoading) {
-    return (
-      <Card>
-        <CardContent className="flex items-center justify-center py-12">
-          <Loader2 className="size-5 animate-spin text-slate-400" />
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <div className="space-y-4">
-      {/* Comment list */}
-      {comments.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-            <MessageSquare className="mb-3 size-8 text-slate-300 dark:text-slate-600" />
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              No comments yet — start the conversation
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card>
-          <CardContent className="divide-y divide-slate-100 p-0 dark:divide-slate-800">
-            {comments.map((comment) => (
-              <div key={comment.id} className="px-4 py-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                    {comment.authorName}
-                  </span>
-                  <span className="text-xs text-slate-500">
-                    {formatDate(comment.createdAt)}
-                  </span>
-                </div>
-                <p className="mt-1 text-sm text-slate-600 dark:text-slate-400 whitespace-pre-wrap">
-                  {comment.content}
-                </p>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* New comment form */}
-      <form onSubmit={handleSubmit} className="flex gap-2">
-        <Textarea
-          value={newComment}
-          onChange={(e) => setNewComment(e.target.value)}
-          placeholder="Write a comment..."
-          className="min-h-[80px] resize-none"
-          maxLength={2000}
-        />
-        <Button
-          type="submit"
-          variant="default"
-          size="icon"
-          className="mt-auto shrink-0"
-          disabled={!newComment.trim() || isSubmitting}
-        >
-          {isSubmitting ? (
-            <Loader2 className="size-4 animate-spin" />
-          ) : (
-            <Send className="size-4" />
-          )}
-        </Button>
-      </form>
-    </div>
-  );
-}
+import { EmptyState } from "@/components/empty-state";
+import { portalApi, PortalApiError, clearPortalAuth } from "@/lib/portal-api";
+import Link from "next/link";
+import type { PortalProject, PortalComment } from "@/lib/types";
 
 export default function PortalProjectDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const [project, setProject] = useState<PortalProject | null>(null);
-  const [documents, setDocuments] = useState<PortalDocument[]>([]);
-  const [tasks, setTasks] = useState<PortalTask[]>([]);
-  const [summary, setSummary] = useState<PortalSummary | null>(null);
+  const [comments, setComments] = useState<PortalComment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [newComment, setNewComment] = useState("");
+  const [isSending, setIsSending] = useState(false);
+  const commentEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const [projectData, docsData, tasksData, summaryData] = await Promise.all([
+        const [projectData, commentsData] = await Promise.all([
           portalApi.get<PortalProject>(`/portal/projects/${params.id}`),
-          portalApi.get<PortalDocument[]>(`/portal/projects/${params.id}/documents`),
-          portalApi.get<PortalTask[]>(`/portal/projects/${params.id}/tasks`),
-          portalApi.get<PortalSummary>(`/portal/projects/${params.id}/summary`).catch(() => null),
+          portalApi.get<PortalComment[]>(`/portal/projects/${params.id}/comments`),
         ]);
         setProject(projectData);
-        setDocuments(docsData);
-        setTasks(tasksData);
-        setSummary(summaryData);
+        setComments(commentsData);
       } catch (err) {
         if (err instanceof PortalApiError && err.status === 401) {
           clearPortalAuth();
@@ -215,6 +45,28 @@ export default function PortalProjectDetailPage() {
     fetchData();
   }, [params.id, router]);
 
+  async function handleSubmitComment() {
+    if (!newComment.trim()) return;
+    setIsSending(true);
+    try {
+      const comment = await portalApi.post<PortalComment>(
+        `/portal/projects/${params.id}/comments`,
+        { content: newComment.trim() },
+      );
+      setComments((prev) => [...prev, comment]);
+      setNewComment("");
+      setTimeout(() => commentEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
+    } catch (err) {
+      if (err instanceof PortalApiError && err.status === 401) {
+        clearPortalAuth();
+        router.replace("/");
+        return;
+      }
+    } finally {
+      setIsSending(false);
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="flex min-h-[40vh] items-center justify-center">
@@ -223,19 +75,19 @@ export default function PortalProjectDetailPage() {
     );
   }
 
-  if (error) {
+  if (error || !project) {
     return (
       <div className="space-y-4">
         <Link
           href="/projects"
-          className="inline-flex items-center text-sm text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+          className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400"
         >
-          <ArrowLeft className="mr-1.5 size-4" />
-          Back to Projects
+          <ArrowLeft className="size-4" />
+          Back to projects
         </Link>
         <div className="flex items-center gap-2 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-300" role="alert">
           <AlertCircle className="size-4 shrink-0" />
-          {error}
+          {error ?? "Project not found"}
         </div>
       </div>
     );
@@ -243,109 +95,109 @@ export default function PortalProjectDetailPage() {
 
   return (
     <div className="space-y-6">
-      {/* Back link */}
-      <div>
-        <Link
-          href="/projects"
-          className="inline-flex items-center text-sm text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
-        >
-          <ArrowLeft className="mr-1.5 size-4" />
-          Back to Projects
-        </Link>
-      </div>
+      <Link
+        href="/projects"
+        className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400"
+      >
+        <ArrowLeft className="size-4" />
+        Back to projects
+      </Link>
 
       {/* Project header */}
-      <div>
-        <div className="flex items-center gap-3">
-          <h1 className="font-display text-2xl text-slate-950 dark:text-slate-50">
-            {project?.name}
-          </h1>
-          {project?.status && (
-            <Badge variant="neutral">{project.status}</Badge>
-          )}
-        </div>
-        {project?.description ? (
-          <p className="mt-2 text-slate-600 dark:text-slate-400">
-            {project.description}
-          </p>
-        ) : (
-          <p className="mt-2 text-sm italic text-slate-400 dark:text-slate-600">
-            No description
-          </p>
-        )}
-        {project?.createdAt && (
-          <div className="mt-2 flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-500">
-            <Calendar className="size-3.5" />
-            <span>Created {formatDate(project.createdAt)}</span>
+      <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="font-display text-xl text-slate-950 dark:text-slate-50">
+              {project.title}
+            </h1>
+            {project.description && (
+              <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+                {project.description}
+              </p>
+            )}
           </div>
-        )}
+          <Badge variant="neutral">{project.status}</Badge>
+        </div>
       </div>
 
-      {/* Summary */}
-      {summary && (
-        <div className="grid grid-cols-3 gap-4">
-          <Card>
-            <CardContent className="flex items-center gap-3 py-4">
-              <Clock className="size-5 text-slate-400" />
-              <div>
-                <p className="text-xs text-slate-500">Total Hours</p>
-                <p className="font-mono text-lg font-semibold tabular-nums text-slate-900 dark:text-slate-100">
-                  {summary.totalHours}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="flex items-center gap-3 py-4">
-              <DollarSign className="size-5 text-slate-400" />
-              <div>
-                <p className="text-xs text-slate-500">Billable Hours</p>
-                <p className="font-mono text-lg font-semibold tabular-nums text-slate-900 dark:text-slate-100">
-                  {summary.billableHours}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="flex items-center gap-3 py-4">
-              <Activity className="size-5 text-slate-400" />
-              <div>
-                <p className="text-xs text-slate-500">Last Activity</p>
-                <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                  {summary.lastActivityAt ? formatDate(summary.lastActivityAt) : "\u2014"}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+      {/* Comments */}
+      <div className="rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+        <div className="border-b border-slate-200 px-6 py-4 dark:border-slate-800">
+          <h2 className="flex items-center gap-2 font-semibold text-slate-900 dark:text-slate-100">
+            <MessageSquare className="size-5" />
+            Comments
+            <Badge variant="neutral">{comments.length}</Badge>
+          </h2>
         </div>
-      )}
 
-      {/* Documents & Tasks */}
-      <Tabs defaultValue="documents">
-        <TabsList>
-          <TabsTrigger value="documents">
-            <FileText className="mr-1.5 size-4" />
-            Documents ({documents.length})
-          </TabsTrigger>
-          <TabsTrigger value="tasks">
-            <CheckSquare className="mr-1.5 size-4" />
-            Tasks ({tasks.length})
-          </TabsTrigger>
-          <TabsTrigger value="comments">
-            <MessageSquare className="mr-1.5 size-4" />
-            Comments{project?.commentCount ? ` (${project.commentCount})` : ""}
-          </TabsTrigger>
-        </TabsList>
-        <TabsContent value="documents">
-          <PortalDocumentTable documents={documents} title="Project Documents" />
-        </TabsContent>
-        <TabsContent value="tasks">
-          <PortalTaskList tasks={tasks} />
-        </TabsContent>
-        <TabsContent value="comments">
-          {params.id && <PortalCommentSection projectId={params.id} />}
-        </TabsContent>
-      </Tabs>
+        <div className="divide-y divide-slate-100 dark:divide-slate-800">
+          {comments.length === 0 ? (
+            <div className="px-6 py-8">
+              <EmptyState
+                icon={MessageSquare}
+                title="No comments yet"
+                description="Start the conversation by adding a comment below"
+              />
+            </div>
+          ) : (
+            comments.map((comment) => (
+              <div key={comment.id} className="px-6 py-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                    {comment.authorName}
+                  </span>
+                  <Badge variant={comment.authorType === "CUSTOMER" ? "default" : "neutral"}>
+                    {comment.authorType === "CUSTOMER" ? "Client" : "Team"}
+                  </Badge>
+                  <span className="text-xs text-slate-500">
+                    {new Date(comment.createdAt).toLocaleDateString(undefined, {
+                      month: "short",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                </div>
+                <p className="mt-1 whitespace-pre-wrap text-sm text-slate-700 dark:text-slate-300">
+                  {comment.content}
+                </p>
+              </div>
+            ))
+          )}
+          <div ref={commentEndRef} />
+        </div>
+
+        {/* Add comment */}
+        <div className="border-t border-slate-200 px-6 py-4 dark:border-slate-800">
+          <div className="flex gap-3">
+            <Textarea
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder="Write a comment..."
+              className="min-h-[80px] resize-none"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                  handleSubmitComment();
+                }
+              }}
+            />
+            <Button
+              variant="default"
+              size="sm"
+              onClick={handleSubmitComment}
+              disabled={isSending || !newComment.trim()}
+              className="self-end"
+            >
+              {isSending ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Send className="size-4" />
+              )}
+            </Button>
+          </div>
+          <p className="mt-1 text-xs text-slate-500">Press Cmd+Enter to send</p>
+        </div>
+      </div>
     </div>
   );
 }

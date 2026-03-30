@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { FolderOpen, FileText, Loader2, AlertCircle } from "lucide-react";
+import { FolderOpen, Loader2, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/empty-state";
 import { portalApi, PortalApiError, clearPortalAuth } from "@/lib/portal-api";
@@ -53,17 +53,13 @@ export default function PortalProjectListPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <h1 className="font-display text-2xl text-slate-950 dark:text-slate-50">
-            Projects
-          </h1>
-          <Badge variant="neutral">{projects.length}</Badge>
-        </div>
+      <div className="flex items-center gap-3">
+        <h1 className="font-display text-2xl text-slate-950 dark:text-slate-50">
+          Projects
+        </h1>
+        <Badge variant="neutral">{projects.length}</Badge>
       </div>
 
-      {/* Content */}
       {projects.length === 0 ? (
         <EmptyState
           icon={FolderOpen}
@@ -82,7 +78,7 @@ export default function PortalProjectListPage() {
                 <FolderOpen className="mt-0.5 size-5 text-slate-400 dark:text-slate-500" />
                 <div className="min-w-0 flex-1">
                   <h3 className="font-semibold text-slate-900 group-hover:text-slate-950 dark:text-slate-100 dark:group-hover:text-slate-50">
-                    {project.name}
+                    {project.title}
                   </h3>
                   {project.description ? (
                     <p className="mt-1 line-clamp-2 text-sm text-slate-600 dark:text-slate-400">
@@ -93,12 +89,8 @@ export default function PortalProjectListPage() {
                       No description
                     </p>
                   )}
-                  <div className="mt-3 flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-500">
-                    <FileText className="size-3.5" />
-                    <span>
-                      {project.documentCount}{" "}
-                      {project.documentCount === 1 ? "document" : "documents"}
-                    </span>
+                  <div className="mt-3">
+                    <Badge variant="neutral">{project.status}</Badge>
                   </div>
                 </div>
               </div>

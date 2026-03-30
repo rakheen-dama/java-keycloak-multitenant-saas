@@ -28,7 +28,6 @@ function PortalLoginContent() {
   const [step, setStep] = useState<LoginStep>("email");
   const [email, setEmail] = useState("");
   const [orgSlug, setOrgSlug] = useState(() => searchParams.get("orgId") ?? "");
-  const [magicLink, setMagicLink] = useState<string | null>(null);
   const [token, setToken] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -80,7 +79,6 @@ function PortalLoginContent() {
           "/portal/auth/request-link",
           { email, orgId: orgSlug },
         );
-        setMagicLink(result.magicLink ?? null);
         setStep("sent");
       } catch (err) {
         if (err instanceof PortalApiError) {
@@ -246,23 +244,12 @@ function PortalLoginContent() {
               <div className="flex flex-col items-center gap-3 text-center">
                 <CheckCircle2 className="size-12 text-green-600 dark:text-green-400" />
                 <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-                  Magic link generated
+                  Check your email
                 </h2>
                 <p className="text-sm text-slate-600 dark:text-slate-400">
-                  For the MVP, the magic link is shown below. In production, this would be sent to your email.
+                  A magic link has been sent to your email address. Click the link to sign in. It expires in 15 minutes.
                 </p>
               </div>
-
-              {magicLink && (
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                    Your magic link
-                  </label>
-                  <div className="break-all rounded-lg bg-slate-50 p-3 font-mono text-xs text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                    {magicLink}
-                  </div>
-                </div>
-              )}
 
               <div className="space-y-2">
                 <label
