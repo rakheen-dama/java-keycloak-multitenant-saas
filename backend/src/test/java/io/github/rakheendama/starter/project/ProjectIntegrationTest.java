@@ -52,6 +52,8 @@ class ProjectIntegrationTest {
 
   private static final String OWNER_KC_USER_ID = "owner-kc-uuid";
   private static final String OWNER_EMAIL = "owner@test.com";
+  private static final String MEMBER_KC_USER_ID = "member-kc-uuid";
+  private static final String MEMBER_EMAIL = "member@test.com";
 
   private String orgSlug;
   private String schemaName;
@@ -85,6 +87,9 @@ class ProjectIntegrationTest {
               owner = memberRepository.save(owner);
               ownerMemberId = owner.getId();
 
+              memberRepository.save(
+                  new Member(MEMBER_KC_USER_ID, MEMBER_EMAIL, "Test Member", "member"));
+
               var customer =
                   new Customer("Test Customer", "customer@test.com", "Test Co", ownerMemberId);
               customer = customerRepository.save(customer);
@@ -110,6 +115,21 @@ class ProjectIntegrationTest {
         .andExpect(jsonPath("$.status").value("ACTIVE"))
         .andExpect(jsonPath("$.customerId").value(customerId.toString()))
         .andExpect(jsonPath("$.createdBy").value(ownerMemberId.toString()));
+  }
+
+  @Test
+  void createProject_memberRole_returns403() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/projects")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    { "title": "Blocked Project", "description": "Should fail", "customerId": "%s" }
+                    """
+                        .formatted(customerId))
+                .with(memberJwt()))
+        .andExpect(status().isForbidden());
   }
 
   @Test
@@ -279,6 +299,18 @@ class ProjectIntegrationTest {
                 j.subject(OWNER_KC_USER_ID)
                     .claim("email", OWNER_EMAIL)
                     .claim("name", "Test Owner")
+                    .claim("organization", List.of(orgSlug)));
+  }
+
+  private org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors
+          .JwtRequestPostProcessor
+      memberJwt() {
+    return jwt()
+        .jwt(
+            j ->
+                j.subject(MEMBER_KC_USER_ID)
+                    .claim("email", MEMBER_EMAIL)
+                    .claim("name", "Test Member")
                     .claim("organization", List.of(orgSlug)));
   }
 }

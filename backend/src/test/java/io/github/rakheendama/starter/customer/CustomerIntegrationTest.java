@@ -49,6 +49,8 @@ class CustomerIntegrationTest {
 
   private static final String OWNER_KC_USER_ID = "owner-kc-uuid";
   private static final String OWNER_EMAIL = "owner@test.com";
+  private static final String MEMBER_KC_USER_ID = "member-kc-uuid";
+  private static final String MEMBER_EMAIL = "member@test.com";
 
   private String orgSlug;
   private String schemaName;
@@ -79,6 +81,9 @@ class CustomerIntegrationTest {
               var owner = new Member(OWNER_KC_USER_ID, OWNER_EMAIL, "Test Owner", "owner");
               owner = memberRepository.save(owner);
               ownerMemberId = owner.getId();
+
+              memberRepository.save(
+                  new Member(MEMBER_KC_USER_ID, MEMBER_EMAIL, "Test Member", "member"));
             });
   }
 
@@ -189,6 +194,20 @@ class CustomerIntegrationTest {
   }
 
   @Test
+  void createCustomer_memberRole_returns403() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/customers")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    { "name": "Blocked Corp", "email": "blocked@acme.com", "company": "Blocked Inc" }
+                    """)
+                .with(memberJwt()))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
   void tenantIsolation_customerInTenantANotVisibleFromTenantB() throws Exception {
     // Seed a customer in tenant A
     ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
@@ -238,6 +257,18 @@ class CustomerIntegrationTest {
                 j.subject(OWNER_KC_USER_ID)
                     .claim("email", OWNER_EMAIL)
                     .claim("name", "Test Owner")
+                    .claim("organization", List.of(orgSlug)));
+  }
+
+  private org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors
+          .JwtRequestPostProcessor
+      memberJwt() {
+    return jwt()
+        .jwt(
+            j ->
+                j.subject(MEMBER_KC_USER_ID)
+                    .claim("email", MEMBER_EMAIL)
+                    .claim("name", "Test Member")
                     .claim("organization", List.of(orgSlug)));
   }
 }

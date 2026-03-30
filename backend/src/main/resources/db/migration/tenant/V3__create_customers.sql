@@ -10,4 +10,4 @@ CREATE TABLE customers (
 );
 
 CREATE INDEX idx_customers_status ON customers (status);
-CREATE INDEX idx_customers_email ON customers (email);
+CREATE UNIQUE INDEX idx_customers_email ON customers (email);
