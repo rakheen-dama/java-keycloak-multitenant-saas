@@ -37,5 +37,27 @@ export default async function PlatformAdminLayout({
     redirect("/");
   }
 
-  return <>{children}</>;
+  return (
+    <div className="min-h-screen bg-slate-50">
+      <header className="border-b bg-white px-6 py-3">
+        <div className="mx-auto flex max-w-5xl items-center justify-between">
+          <div>
+            <h1 className="text-sm font-semibold text-slate-900">
+              Platform Admin
+            </h1>
+            <p className="text-xs text-slate-500">
+              Manage access requests and tenant provisioning
+            </p>
+          </div>
+          <a
+            href="/logout"
+            className="rounded-md px-3 py-1.5 text-sm text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
+          >
+            Sign out
+          </a>
+        </div>
+      </header>
+      <main className="mx-auto max-w-5xl px-6 py-8">{children}</main>
+    </div>
+  );
 }

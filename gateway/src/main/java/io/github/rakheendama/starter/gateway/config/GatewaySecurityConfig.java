@@ -63,7 +63,7 @@ public class GatewaySecurityConfig {
         .logout(
             logout ->
                 logout
-                    .logoutUrl("/bff/logout")
+                    .logoutRequestMatcher(PathPatternRequestMatcher.pathPattern("/logout"))
                     .logoutSuccessHandler(oidcLogoutSuccessHandler())
                     .invalidateHttpSession(true)
                     .deleteCookies("SESSION"))
