@@ -17,6 +17,12 @@ spring:
           issuer-uri: http://localhost:8180/realms/starter
           jwk-set-uri: http://localhost:8180/realms/starter/protocol/openid-connect/certs
 
+cors:
+  allowed-origins:
+    - http://localhost:3000
+    - http://localhost:3002
+    - http://localhost:8443
+
 keycloak:
   admin:
     auth-server-url: http://localhost:8180
