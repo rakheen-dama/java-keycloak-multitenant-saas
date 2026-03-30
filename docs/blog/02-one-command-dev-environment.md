@@ -86,6 +86,7 @@ services:
   mailpit:
     image: axllent/mailpit:latest
     container_name: starter-mailpit
+    restart: unless-stopped
     ports:
       - "1025:1025"    # SMTP
       - "8025:8025"    # Web UI

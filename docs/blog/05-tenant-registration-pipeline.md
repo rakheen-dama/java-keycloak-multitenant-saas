@@ -122,7 +122,7 @@ public class OtpService {
   }
 
   public String hashOtp(String otp) {
-    return passwordEncoder.encode(otp);  // BCrypt, work factor 12
+    return passwordEncoder.encode(otp);  // BCrypt (default work factor 10)
   }
 
   public boolean verifyOtp(String rawOtp, String hash) {
@@ -139,7 +139,7 @@ Security properties of the OTP system:
 
 - **Generation:** `SecureRandom.getInstanceStrong()` — OS-level entropy, not `Math.random()`
 - **Format:** 6-digit numeric (1,000,000 possible values)
-- **Storage:** BCrypt hash (work factor 12) — the raw OTP is never persisted
+- **Storage:** BCrypt hash (default work factor 10) — the raw OTP is never persisted
 - **TTL:** Configurable, default 10 minutes
 - **Attempt limit:** Configurable, default 5 attempts
 - **Anti-enumeration:** Identical error messages whether the email exists or not

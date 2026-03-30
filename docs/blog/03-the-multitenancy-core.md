@@ -226,9 +226,17 @@ From `backend/src/main/java/io/github/rakheendama/starter/multitenancy/SchemaMul
 @Override
 public Connection getConnection(String tenantIdentifier) throws SQLException {
     Connection connection = getAnyConnection();
-    setSearchPath(connection, tenantIdentifier);
+    try {
+        setSearchPath(connection, tenantIdentifier);
+    } catch (SQLException e) {
+        releaseAnyConnection(connection);
+        throw e;
+    }
     return connection;
 }
+
+Notice the try-catch: if `SET search_path` fails, we release the connection back to the pool
+instead of leaking it.
 
 @Override
 public void releaseConnection(String tenantIdentifier, Connection connection) throws SQLException {
